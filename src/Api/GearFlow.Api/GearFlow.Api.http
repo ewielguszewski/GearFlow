@@ -1,0 +1,6 @@
+@GearFlow.Api_HostAddress = http://localhost:5037
+
+GET {{GearFlow.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

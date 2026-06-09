@@ -1,0 +1,36 @@
+## Build results
+bin/
+obj/
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+## .NET publish output
+publish/
+wwwroot/
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+**/project.lock.json
+**/project.assets.json
+**/nuget.*.props
+**/nuget.*.targets
+
+## Rider / JetBrains
+.idea/
+*.sln.iml
+
+## Logs
+*.log
+
+## Secrets
+secrets.json
