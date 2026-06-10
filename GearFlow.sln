@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Api", "src\Api\GearFlow.Api\GearFlow.Api.csproj", "{1E7D9E1B-0763-4EDF-A89E-D4FAC9B33BAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GearFlow.Api", "src\Api\GearFlow.Api\GearFlow.Api.csproj", "{1E7D9E1B-0763-4EDF-A89E-D4FAC9B33BAC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0AF2FF94-DA60-4B39-B405-3E1D15C5B21C}"
 EndProject
@@ -13,11 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{0CBD60
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api", "Api", "{DA3B3CE8-7DAB-4E50-AFF7-84AF671A2AC9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Shared.Abstractions", "src\Shared\GearFlow.Shared.Abstractions\GearFlow.Shared.Abstractions.csproj", "{FEAB1EFE-3E64-48A7-B5DB-99B8797B73A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GearFlow.Shared.Abstractions", "src\Shared\GearFlow.Shared.Abstractions\GearFlow.Shared.Abstractions.csproj", "{FEAB1EFE-3E64-48A7-B5DB-99B8797B73A5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Shared.Infrastructure", "src\Shared\GearFlow.Shared.Infrastructure\GearFlow.Shared.Infrastructure.csproj", "{253A587D-781C-4E9D-A0E9-E8E9D59FA9C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GearFlow.Shared.Infrastructure", "src\Shared\GearFlow.Shared.Infrastructure\GearFlow.Shared.Infrastructure.csproj", "{253A587D-781C-4E9D-A0E9-E8E9D59FA9C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Modules.Catalog.Domain", "src\Modules\Catalog\GearFlow.Modules.Catalog.Domain\GearFlow.Modules.Catalog.Domain.csproj", "{73D43983-BB7C-4B4F-86DD-07F2008F26A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GearFlow.Modules.Catalog.Domain", "src\Modules\Catalog\GearFlow.Modules.Catalog.Domain\GearFlow.Modules.Catalog.Domain.csproj", "{73D43983-BB7C-4B4F-86DD-07F2008F26A5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Catalog", "Catalog", "{EAA9984E-1CB9-403E-8C23-5DEC32081579}"
 EndProject
@@ -29,7 +29,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rentals", "Rentals", "{1785
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Maintenance", "Maintenance", "{36D2B64D-D7CA-4F91-97D0-7DDBAAD2C484}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Modules.Reservations.Domain", "src\Modules\Reservations\GearFlow.Modules.Reservations.Domain\GearFlow.Modules.Reservations.Domain.csproj", "{1EE90EE9-48C3-4E34-AEE3-249388D1B293}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GearFlow.Modules.Reservations.Domain", "src\Modules\Reservations\GearFlow.Modules.Reservations.Domain\GearFlow.Modules.Reservations.Domain.csproj", "{1EE90EE9-48C3-4E34-AEE3-249388D1B293}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{034877B3-BCAF-4D0D-A848-0D67647A8751}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{00A598E5-59CD-4D4A-AEEA-D8ADCF75DACE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Catalog", "Catalog", "{67402C4E-8D84-42B8-AA1F-45658D04AFE1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Modules.Catalog.Tests.Unit", "tests\Modules\Catalog\GearFlow.Modules.Catalog.Tests.Unit\GearFlow.Modules.Catalog.Tests.Unit.csproj", "{25351ADB-E6BE-482C-B8A3-F573C1A88346}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Reservations", "Reservations", "{0F2BF1EC-5924-4849-A6D9-C685CF746597}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Reservations.Tests.Unit", "tests\Modules\Reservations\GearFlow.Reservations.Tests.Unit\GearFlow.Reservations.Tests.Unit.csproj", "{28D2CAEA-A8AE-4007-9A98-5304E290684F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +69,14 @@ Global
 		{1EE90EE9-48C3-4E34-AEE3-249388D1B293}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EE90EE9-48C3-4E34-AEE3-249388D1B293}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EE90EE9-48C3-4E34-AEE3-249388D1B293}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25351ADB-E6BE-482C-B8A3-F573C1A88346}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25351ADB-E6BE-482C-B8A3-F573C1A88346}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25351ADB-E6BE-482C-B8A3-F573C1A88346}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25351ADB-E6BE-482C-B8A3-F573C1A88346}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28D2CAEA-A8AE-4007-9A98-5304E290684F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28D2CAEA-A8AE-4007-9A98-5304E290684F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28D2CAEA-A8AE-4007-9A98-5304E290684F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28D2CAEA-A8AE-4007-9A98-5304E290684F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,6 +95,11 @@ Global
 		{1785BF6B-DBF9-4479-9255-C6A6290F7E6C} = {0B44A4C6-D758-4AC4-A8B0-CD434CDE9744}
 		{36D2B64D-D7CA-4F91-97D0-7DDBAAD2C484} = {0B44A4C6-D758-4AC4-A8B0-CD434CDE9744}
 		{1EE90EE9-48C3-4E34-AEE3-249388D1B293} = {F10C4FDB-8EDC-4BF0-8684-D6C1260FA711}
+		{00A598E5-59CD-4D4A-AEEA-D8ADCF75DACE} = {034877B3-BCAF-4D0D-A848-0D67647A8751}
+		{67402C4E-8D84-42B8-AA1F-45658D04AFE1} = {00A598E5-59CD-4D4A-AEEA-D8ADCF75DACE}
+		{25351ADB-E6BE-482C-B8A3-F573C1A88346} = {67402C4E-8D84-42B8-AA1F-45658D04AFE1}
+		{0F2BF1EC-5924-4849-A6D9-C685CF746597} = {00A598E5-59CD-4D4A-AEEA-D8ADCF75DACE}
+		{28D2CAEA-A8AE-4007-9A98-5304E290684F} = {0F2BF1EC-5924-4849-A6D9-C685CF746597}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D81CF4DA-74B2-4793-A12B-1313246BEA0F}

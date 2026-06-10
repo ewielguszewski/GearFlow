@@ -23,9 +23,14 @@ public readonly record struct Money
 
         return new Money(rounded, currency);
     }
+    public static Money ZeroFromCurrency(CurrencyCode currency)
+        => Create(0, currency);
 
     public static Money CreateFromPln(decimal amount)
         => Create(amount, CurrencyCode.PLN);
+
+    public static Money ZeroFromPln()
+        => Create(0, CurrencyCode.PLN);
 
     public Money Add(Money other)
     {
