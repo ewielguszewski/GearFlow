@@ -37,11 +37,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{00A5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Catalog", "Catalog", "{67402C4E-8D84-42B8-AA1F-45658D04AFE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Modules.Catalog.Tests.Unit", "tests\Modules\Catalog\GearFlow.Modules.Catalog.Tests.Unit\GearFlow.Modules.Catalog.Tests.Unit.csproj", "{25351ADB-E6BE-482C-B8A3-F573C1A88346}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GearFlow.Modules.Catalog.Tests.Unit", "tests\Modules\Catalog\GearFlow.Modules.Catalog.Tests.Unit\GearFlow.Modules.Catalog.Tests.Unit.csproj", "{25351ADB-E6BE-482C-B8A3-F573C1A88346}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Reservations", "Reservations", "{0F2BF1EC-5924-4849-A6D9-C685CF746597}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Reservations.Tests.Unit", "tests\Modules\Reservations\GearFlow.Reservations.Tests.Unit\GearFlow.Reservations.Tests.Unit.csproj", "{28D2CAEA-A8AE-4007-9A98-5304E290684F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GearFlow.Reservations.Tests.Unit", "tests\Modules\Reservations\GearFlow.Reservations.Tests.Unit\GearFlow.Reservations.Tests.Unit.csproj", "{28D2CAEA-A8AE-4007-9A98-5304E290684F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GearFlow.Modules.Availability.Core", "src\Modules\Availability\GearFlow.Modules.Availability.Core\GearFlow.Modules.Availability.Core.csproj", "{B7892D3A-BF7D-463E-ACC9-8CCF3DBFDA75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +79,10 @@ Global
 		{28D2CAEA-A8AE-4007-9A98-5304E290684F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28D2CAEA-A8AE-4007-9A98-5304E290684F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28D2CAEA-A8AE-4007-9A98-5304E290684F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7892D3A-BF7D-463E-ACC9-8CCF3DBFDA75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7892D3A-BF7D-463E-ACC9-8CCF3DBFDA75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7892D3A-BF7D-463E-ACC9-8CCF3DBFDA75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7892D3A-BF7D-463E-ACC9-8CCF3DBFDA75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -100,6 +106,7 @@ Global
 		{25351ADB-E6BE-482C-B8A3-F573C1A88346} = {67402C4E-8D84-42B8-AA1F-45658D04AFE1}
 		{0F2BF1EC-5924-4849-A6D9-C685CF746597} = {00A598E5-59CD-4D4A-AEEA-D8ADCF75DACE}
 		{28D2CAEA-A8AE-4007-9A98-5304E290684F} = {0F2BF1EC-5924-4849-A6D9-C685CF746597}
+		{B7892D3A-BF7D-463E-ACC9-8CCF3DBFDA75} = {8AEEA008-8D96-4EB0-9BB4-E8E1AC243199}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D81CF4DA-74B2-4793-A12B-1313246BEA0F}
