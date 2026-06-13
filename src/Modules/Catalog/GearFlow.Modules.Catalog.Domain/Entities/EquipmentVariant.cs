@@ -26,6 +26,9 @@ public class EquipmentVariant
     {
         Id = Guid.NewGuid();
         EquipmentModelId = equipmentModelId;
+        DisplayName = displayName;
+        PublicNote = publicNote;
+        PriceOverride = priceOverride;
         Size = size;
     }
 
