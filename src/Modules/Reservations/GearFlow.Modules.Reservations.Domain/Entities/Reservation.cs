@@ -66,7 +66,7 @@ public class Reservation
         ExtendTtlIfNotExceeded();
     }
 
-    public void AddReservationLine(Guid reservationLineId, ReservedItemSnapshot item, PriceSource priceSource, DateTime utcNow)
+    public void AddReservationLine(Guid reservationLineId, OfferSnapshot item, DateTime utcNow)
     {
         if (item.UnitPrice.Currency != Currency)
             throw new DomainException($"Currency of the reservation line ({item.UnitPrice.Currency}) must match reservation currency ({Currency})");
@@ -75,7 +75,7 @@ public class Reservation
 
         var lineTotalPrice = Money.Create(item.UnitPrice.Amount * LengthInDays, item.UnitPrice.Currency);
 
-        var reservationLine = ReservationLine.Create(reservationLineId, Id, item, lineTotalPrice, priceSource);
+        var reservationLine = ReservationLine.Create(reservationLineId, Id, item, lineTotalPrice);
 
         _reservationLines.Add(reservationLine);
 

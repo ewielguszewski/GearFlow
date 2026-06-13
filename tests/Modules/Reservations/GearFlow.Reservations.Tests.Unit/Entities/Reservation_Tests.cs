@@ -13,7 +13,7 @@ public class Reservation_Tests
         var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
 
         var exception = Record.Exception(() => 
-            reservation.AddReservationLine(Guid.NewGuid(), _reservedItemSnapshot, _priceSource, DateTime.UtcNow.AddMinutes(Reservation.TtlBufferMinutes)));
+            reservation.AddReservationLine(Guid.NewGuid(), _offerSnapshot, DateTime.UtcNow.AddMinutes(Reservation.TtlBufferMinutes)));
 
         exception.ShouldNotBeNull();
         exception.ShouldBeOfType<DomainException>();
@@ -23,7 +23,7 @@ public class Reservation_Tests
     public void should_not_remove_line_after_ttl()
     {
         var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
-        reservation.AddReservationLine(Guid.NewGuid(), _reservedItemSnapshot, _priceSource, DateTime.UtcNow.AddMinutes(Reservation.TtlBufferMinutes));
+        reservation.AddReservationLine(_reservationLine.Id, _offerSnapshot, DateTime.UtcNow);
 
         var exception = Record.Exception(() =>
             reservation.RemoveReservationLine(_reservationLine.Id, reservation.TtlExpiresAt.AddMinutes(1)));
@@ -37,7 +37,7 @@ public class Reservation_Tests
     {
         var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
 
-        reservation.AddReservationLine(Guid.NewGuid(), _reservedItemSnapshot, PriceSource.CatalogModel, DateTime.UtcNow);
+        reservation.AddReservationLine(_reservationLine.Id, _offerSnapshot, DateTime.UtcNow);
 
         Assert.True(reservation.TotalPrice.Amount == _price.Amount);
 
@@ -53,7 +53,7 @@ public class Reservation_Tests
 
         Assert.True(reservation.TtlExpiresAt == reservation.CreatedAt.AddMinutes(Reservation.TtlBufferMinutes));
 
-        reservation.AddReservationLine(Guid.NewGuid(), _reservedItemSnapshot, PriceSource.CatalogModel, DateTime.UtcNow);
+        reservation.AddReservationLine(Guid.NewGuid(), _offerSnapshot, DateTime.UtcNow);
 
         Assert.True(reservation.TtlExpiresAt == reservation.CreatedAt.AddMinutes(Reservation.TtlBufferMinutes + Reservation.TtlUpdateBufferMinutes));
 
@@ -68,7 +68,7 @@ public class Reservation_Tests
 
         for (int i = 0; i < noOfTimes + 1; i++)
         {
-            reservation.AddReservationLine(Guid.NewGuid(), _reservedItemSnapshot, PriceSource.CatalogModel, DateTime.UtcNow);
+            reservation.AddReservationLine(Guid.NewGuid(), _offerSnapshot, DateTime.UtcNow);
         }
 
         Assert.True(reservation.TtlExpiresAt <= reservation.CreatedAt.AddMinutes(Reservation.MaxTtl));
@@ -110,7 +110,7 @@ public class Reservation_Tests
     private readonly CurrencyCode _currency;
     private readonly Money _price;
     private readonly DateRange _reservedPeriod;
-    private readonly ReservedItemSnapshot _reservedItemSnapshot;
+    private readonly OfferSnapshot _offerSnapshot;
     private readonly ReservationLine _reservationLine;
 
     public Reservation_Tests()
@@ -118,8 +118,8 @@ public class Reservation_Tests
         _priceSource = PriceSource.CatalogModel;
         _currency = CurrencyCode.PLN;
         _price = Money.CreateFromPln(1);
-        _reservedPeriod = new DateRange(DateTime.UtcNow, DateTime.UtcNow.AddDays(1));
-        _reservedItemSnapshot = new ReservedItemSnapshot(Guid.NewGuid(), Guid.NewGuid(), "Name", "Brand", "Model", "Note", Money.ZeroFromPln(), "S");
-        _reservationLine = ReservationLine.Create(Guid.NewGuid(), Guid.NewGuid(), _reservedItemSnapshot, _price, _priceSource);
+        _reservedPeriod = new DateRange(DateTime.UtcNow, DateTime.UtcNow);
+        _offerSnapshot = new OfferSnapshot(Guid.NewGuid(), Guid.NewGuid(), "Name", "Brand", "Model", "Note", _price, _priceSource, "S");
+        _reservationLine = ReservationLine.Create(Guid.NewGuid(), Guid.NewGuid(), _offerSnapshot, _price);
     }
 }
