@@ -17,6 +17,7 @@ public class Reservation
     public DateRange ReservedPeriod { get; private set; } = default!;
 
     public ReservationStatus Status { get; private set; }
+    public CancellationReason? CancReason { get; private set; }
     public PaymentMethod? SelectedPaymentMethod { get; private set; } // simplified for now until implementing payments module
 
     public DateTime CreatedAt { get; }
@@ -56,7 +57,7 @@ public class Reservation
     public void RemoveReservationLine(Guid reservationLineId, DateTime utcNow)
     {
         EnsureDraftNotExpired(utcNow);
-        
+
         var reservationLine = _reservationLines.FirstOrDefault(rl => rl.Id == reservationLineId);
         if (reservationLine == null)
             return;
@@ -83,12 +84,12 @@ public class Reservation
         ExtendTtlIfNotExceeded();
     }
 
-    public void CancelReservation()
+    public void CancelReservation(CancellationReason cancellationReason)
     {
-        if (Status != ReservationStatus.Fulfilled)
-        {
-            Status = ReservationStatus.Cancelled;
-        }
+        if (Status == ReservationStatus.Fulfilled)
+            throw new DomainException("Reservation cannot be cancelled as it is already checked out");
+
+        SetCancellationReason(cancellationReason);
     }
 
     public void MarkAsPendingPayment(PaymentMethod paymentMethod, DateTime utcNow)
@@ -124,10 +125,31 @@ public class Reservation
     public void SetUpdatedAt(DateTime utcNow)
         => UpdatedAt = utcNow;
 
-    private void EnsureDraftNotExpired(DateTime utcNow)
+    public void EnsureDraftNotExpired(DateTime utcNow)
     {
         if (Status != ReservationStatus.Draft || utcNow > TtlExpiresAt)
             throw new DomainException("Reservation has expired.");
+    }
+
+    public bool IsDraftExpired(DateTime utcNow)
+    {
+        if (Status != ReservationStatus.Draft)
+            return false;
+        if (utcNow < TtlExpiresAt)
+            return false;
+        return true;
+    }
+    
+    public bool IsDraft => Status == ReservationStatus.Draft;
+
+    public void Expire(DateTime utcNow)
+    {
+        CancelReservation(CancellationReason.DraftExpired);
+    }
+
+    private void SetCancellationReason(CancellationReason cancReason)
+    {
+        CancReason = cancReason;
     }
 
     private void RecalculateTotalPrice()
@@ -159,4 +181,13 @@ public enum PaymentMethod
 {
     CreditCard,
     CashOnPickup
+}
+
+public enum CancellationReason
+{
+    CustomerCancelled,
+    EmployeeCancelled,
+    PaymentExpired,
+    DraftExpired,
+    ReplacedByNewDraft
 }
