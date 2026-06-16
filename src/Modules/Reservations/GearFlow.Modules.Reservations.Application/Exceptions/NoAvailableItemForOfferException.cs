@@ -2,11 +2,12 @@
 
 namespace GearFlow.Modules.Reservations.Application.Exceptions;
 
-public class OfferVariantNotAvailableException : AppException
+public class NoAvailableItemForOfferException : AppException
 {
     public Guid OfferVariantId { get; }
 
-    public OfferVariantNotAvailableException(Guid offerVariantId) : base($"Offer variant with id {offerVariantId} is not available.")
+    public NoAvailableItemForOfferException(Guid offerVariantId)
+        : base($"No available item for offer variant with id: {offerVariantId}")
     {
         OfferVariantId = offerVariantId;
     }

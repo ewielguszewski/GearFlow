@@ -2,14 +2,16 @@
 
 namespace GearFlow.Modules.Catalog.Contracts;
 
-public class ReservableOfferVariantDto
-{
-    public Guid VariantId { get; set; }
-    public string? VariantName { get; set; } = null!;
-    public string Brand { get; set; } = null!;
-    public string Model { get; set; } = null!;
-    public string? PublicNote { get; set; }
-    public Money BasePrice { get; set; }
-    public Money? OverridenPrice { get; set; }
-    public string? Size { get; set; } = null!;
-}
+public sealed record ReservableOfferDto
+(
+    Guid VariantId,
+    string? VariantName,
+    string Brand,
+    string Model,
+    string? PublicNote,
+    Money BasePrice,
+    Money? OverridenPrice,
+    string? Size,
+
+    IReadOnlyCollection<Guid> ActiveItemIds
+);

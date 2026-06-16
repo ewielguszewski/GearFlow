@@ -4,5 +4,6 @@ namespace GearFlow.Modules.Availability.Contracts;
 
 public interface IAvailabilityAllocator
 {
-    Task<Guid?> AllocateItemAsync(Guid offerVariantId, DateRange timePeriod, Guid reservationLineId, CancellationToken cancellationToken = default);
+    Task<Guid?> TryAllocateItemAsync(IEnumerable<Guid> itemIds, Guid SourceId, DateRange timePeriod, CancellationToken cancellationToken = default);
+    Task ReleaseReservationAllocationsAsync(Guid SourceId, CancellationToken cancellationToken = default);
 }

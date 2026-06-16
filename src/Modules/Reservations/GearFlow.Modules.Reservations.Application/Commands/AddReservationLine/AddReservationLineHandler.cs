@@ -5,6 +5,7 @@ using GearFlow.Shared.Abstractions.Commands;
 using GearFlow.Shared.Abstractions.Time;
 using GearFlow.Modules.Availability.Contracts;
 using GearFlow.Modules.Catalog.Contracts;
+using GearFlow.Shared.Abstractions.Common;
 
 namespace GearFlow.Modules.Reservations.Application.Commands.AddReservationLine;
 
@@ -25,19 +26,35 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
 
     public async Task HandleAsync(AddReservationLineCommand command, CancellationToken cancellationToken = default)
     {
+        var now = _clock.Current();
+
         var reservation = await _reservationRepository.GetAsync(command.ReservationId, cancellationToken);
 
         if (reservation is null)
             throw new ReservationNotFoundException(command.ReservationId);
 
-        var offer = await _catalogOfferReader.GetReservableOfferVariantAsync(command.OfferVariantId, cancellationToken);
-        if (offer is null)
-            throw new OfferVariantNotAvailableException(command.OfferVariantId);
+        if (!reservation.IsDraft)
+            throw new DomainException("Only draft reservations can be modified.");
 
-        // todo: Wrap Catalog validation, Availability allocation, and Reservation update in one Unit of Work once persistence is introduced.
-        var heldItemId = await _availabilityAllocator.AllocateItemAsync(offer.VariantId, reservation.ReservedPeriod, command.ReservationLineId, cancellationToken);
+        if (reservation.IsDraftExpired(now))
+        {
+            reservation.Expire(now);
+
+            await _availabilityAllocator.ReleaseReservationAllocationsAsync(reservation.Id, cancellationToken);
+            await _reservationRepository.UpdateAsync(reservation, cancellationToken);
+
+            throw new DomainException("Reservation draft has expired.");
+        }
+
+        var offer = await _catalogOfferReader.GetReservableOfferAsync(command.OfferVariantId, cancellationToken);
+        if (offer is null)
+            throw new OfferNotAvailableException(command.OfferVariantId);
+        if (offer.ActiveItemIds == null || offer.ActiveItemIds.Count == 0)
+            throw new NoAvailableItemForOfferException(command.OfferVariantId);
+        
+        var heldItemId = await _availabilityAllocator.TryAllocateItemAsync(offer.ActiveItemIds, reservation.Id, reservation.ReservedPeriod, cancellationToken);
         if (heldItemId is null)
-            throw new NoAvailableItemForOfferVariantException(command.OfferVariantId);
+            throw new NoAvailableItemForOfferException(command.OfferVariantId);
 
         var snapshot = new OfferSnapshot
         {
@@ -52,8 +69,12 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
             Size = offer.Size
         };
 
-        reservation.AddReservationLine(command.ReservationLineId, snapshot, _clock.Current());
+        // todo: Introduce explicit idempotency key for AddReservationLine.
+        // ReservationLineId is currently command-provided mainly for testability.
+        reservation.AddReservationLine(command.ReservationLineId, snapshot, now);
 
         await _reservationRepository.UpdateAsync(reservation, cancellationToken);
     }
 }
+
+// todo: Wrap Availability allocation and Reservation update in one Unit of Work once persistence is introduced.

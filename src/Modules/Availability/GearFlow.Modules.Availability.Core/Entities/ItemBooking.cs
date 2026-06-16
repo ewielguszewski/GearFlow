@@ -6,23 +6,25 @@ public class ItemBooking
 {
     public Guid Id { get; private set; }
     public Guid ItemId { get; private set; }
+    public Guid VariantId { get; private set; }
     public DateRange TimePeriod { get; private set; }
     public Guid SourceId { get; private set; }
     public BookingType Source { get; private set; }
     
     private ItemBooking() { } // EF
 
-    private ItemBooking(Guid itemId, DateRange timePeriod, Guid sourceId, BookingType source)
+    private ItemBooking(Guid itemId, Guid variantId, DateRange timePeriod, Guid sourceId, BookingType source)
     {
         Id = Guid.NewGuid();
         ItemId = itemId;
+        VariantId = variantId;
         TimePeriod = timePeriod;
         SourceId = sourceId;
         Source = source;
     }
 
-    public static ItemBooking Create(Guid itemId, DateRange timePeriod, Guid sourceId, BookingType source)
-        => new ItemBooking(itemId, timePeriod, sourceId, source);
+    public static ItemBooking Create(Guid itemId, Guid variantId, DateRange timePeriod, Guid sourceId, BookingType source)
+        => new ItemBooking(itemId, variantId, timePeriod, sourceId, source);
 }
 
 
