@@ -89,6 +89,7 @@ public class Reservation
         if (Status == ReservationStatus.Fulfilled)
             throw new DomainException("Reservation cannot be cancelled as it is already checked out");
 
+        Status = ReservationStatus.Cancelled;
         SetCancellationReason(cancellationReason);
     }
 
@@ -144,6 +145,7 @@ public class Reservation
 
     public void Expire(DateTime utcNow)
     {
+        Status = ReservationStatus.Cancelled;
         CancelReservation(CancellationReason.DraftExpired);
     }
 

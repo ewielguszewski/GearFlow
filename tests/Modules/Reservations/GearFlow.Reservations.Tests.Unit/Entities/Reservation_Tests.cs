@@ -1,4 +1,5 @@
 ﻿using GearFlow.Modules.Reservations.Domain.Entities;
+using GearFlow.Modules.Reservations.Domain.ValueObjects;
 using GearFlow.Shared.Abstractions.Common;
 using GearFlow.Shared.Abstractions.ValueObjects;
 using Shouldly;
@@ -104,6 +105,15 @@ public class Reservation_Tests
         reservation.MarkAsConfirmed();
 
         reservation.Status.ShouldBe(ReservationStatus.Confirmed);
+    }
+
+    [Fact]
+    public void confirmed_reservation_should_be_cancelled()
+    {
+        var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
+        reservation.MarkAsPendingPayment(PaymentMethod.CreditCard, DateTime.UtcNow);
+        reservation.CancelReservation(CancellationReason.EmployeeCancelled);
+        reservation.Status.ShouldBe(ReservationStatus.Cancelled);
     }
 
     private readonly PriceSource _priceSource;
