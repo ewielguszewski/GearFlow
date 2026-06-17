@@ -1,4 +1,5 @@
-﻿using GearFlow.Shared.Abstractions.ValueObjects;
+﻿using GearFlow.Modules.Reservations.Domain.ValueObjects;
+using GearFlow.Shared.Abstractions.ValueObjects;
 
 namespace GearFlow.Modules.Reservations.Domain.Entities;
 

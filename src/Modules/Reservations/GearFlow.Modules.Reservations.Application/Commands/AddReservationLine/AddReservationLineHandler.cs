@@ -1,4 +1,3 @@
-using GearFlow.Modules.Reservations.Domain.Entities;
 using GearFlow.Modules.Reservations.Domain.Repositories;
 using GearFlow.Modules.Reservations.Application.Exceptions;
 using GearFlow.Shared.Abstractions.Commands;
@@ -6,6 +5,7 @@ using GearFlow.Shared.Abstractions.Time;
 using GearFlow.Modules.Availability.Contracts;
 using GearFlow.Modules.Catalog.Contracts;
 using GearFlow.Shared.Abstractions.Common;
+using GearFlow.Modules.Reservations.Domain.ValueObjects;
 
 namespace GearFlow.Modules.Reservations.Application.Commands.AddReservationLine;
 
