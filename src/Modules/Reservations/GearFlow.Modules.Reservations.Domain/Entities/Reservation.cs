@@ -1,11 +1,12 @@
 using GearFlow.Modules.Reservations.Domain.ValueObjects;
 using GearFlow.Shared.Abstractions.Common;
+using GearFlow.Shared.Abstractions.Kernel.Types;
 using GearFlow.Shared.Abstractions.ValueObjects;
 
 namespace GearFlow.Modules.Reservations.Domain.Entities;
 
 
-public class Reservation
+public class Reservation : AggregateRoot
 {
     public static readonly int MaxTtl = 15;                // todo: move TTL values to reservation options when configuration is introduced
     public static readonly int TtlBufferMinutes = 5;
