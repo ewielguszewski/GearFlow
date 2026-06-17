@@ -7,28 +7,37 @@ namespace GearFlow.Modules.Catalog.Domain.Entities;
 // Type-specific size validation can be introduced later through an EquipmentSize value object, based on EquipmentModel's type
 public class EquipmentVariant
 {
+    private decimal? _overriddenPriceAmount;
+    private string? _overriddenPriceCurrency;
+
     public Guid Id { get; private set; }
     public Guid EquipmentModelId { get; private set; }
     public EquipmentModel EquipmentModel { get; private set; } = default!;
 
     public string? DisplayName { get; private set; }
     public string? PublicNote { get; private set; }
-    public Money? PriceOverride { get; private set; }
+    public Money? OverriddenPrice =>
+    _overriddenPriceAmount is null || _overriddenPriceCurrency is null
+        ? null
+        : Money.Create(
+            _overriddenPriceAmount.Value,
+            CurrencyCode.From(_overriddenPriceCurrency));
 
     public string? Size { get; private set; }
 
-    public bool IsIndividuallyPriced => PriceOverride != null;
+    public bool IsIndividuallyPriced => OverriddenPrice != null;
 
 
     private EquipmentVariant() { } // EF
 
-    private EquipmentVariant(Guid equipmentModelId, string? displayName, string? publicNote, Money? priceOverride, string? size)
+    private EquipmentVariant(Guid equipmentModelId, string? displayName, string? publicNote, Money? overriddenPrice, string? size)
     {
         Id = Guid.NewGuid();
         EquipmentModelId = equipmentModelId;
         DisplayName = displayName;
         PublicNote = publicNote;
-        PriceOverride = priceOverride;
+        _overriddenPriceAmount = overriddenPrice?.Amount;
+        _overriddenPriceCurrency = overriddenPrice?.Currency.Value;
         Size = size;
     }
 
@@ -39,9 +48,15 @@ public class EquipmentVariant
         => new EquipmentVariant(equipmentModelId, displayName, publicNote, priceOverride, size);
 
     public void ChangePriceOverride(Money newPrice)
-    => PriceOverride = newPrice;
+    {
+         _overriddenPriceAmount = newPrice.Amount;
+        _overriddenPriceCurrency = newPrice.Currency.Value;
+    }
 
     public void ClearPriceOverride()
-        => PriceOverride = null;
+    {
+        _overriddenPriceAmount = null;
+        _overriddenPriceCurrency = null;
+    }
 }
 

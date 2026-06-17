@@ -1,6 +1,6 @@
 ﻿namespace GearFlow.Shared.Abstractions.ValueObjects;
 
-public record struct CurrencyCode
+public sealed record CurrencyCode
 {
     public string Value { get; }
 
