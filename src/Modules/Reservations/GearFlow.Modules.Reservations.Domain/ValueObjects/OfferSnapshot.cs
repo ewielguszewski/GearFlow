@@ -1,7 +1,6 @@
-﻿
-using GearFlow.Shared.Abstractions.ValueObjects;
+﻿using GearFlow.Shared.Abstractions.ValueObjects;
 
-namespace GearFlow.Modules.Reservations.Domain.Entities;
+namespace GearFlow.Modules.Reservations.Domain.ValueObjects;
 
 // Snapshot used for historical display and navigation.
 // VariantId point to the public catalog path; ItemId points to the concrete item held internally.

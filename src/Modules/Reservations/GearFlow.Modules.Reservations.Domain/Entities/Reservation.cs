@@ -1,3 +1,4 @@
+using GearFlow.Modules.Reservations.Domain.ValueObjects;
 using GearFlow.Shared.Abstractions.Common;
 using GearFlow.Shared.Abstractions.ValueObjects;
 
