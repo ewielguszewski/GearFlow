@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\GearFlow.Shared.Infrastructure\GearFlow.Shared.Infrastructure.csproj" />
+    <ProjectReference Include="..\GearFlow.Modules.Catalog.Application\GearFlow.Modules.Catalog.Application.csproj" />
+  </ItemGroup>
+
+</Project>

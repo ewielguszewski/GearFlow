@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GearFlow.Modules.Availability.Contracts\GearFlow.Modules.Availability.Contracts.csproj" />
+    <ProjectReference Include="..\GearFlow.Modules.Availability.Core\GearFlow.Modules.Availability.Core.csproj" />
+  </ItemGroup>
+
+</Project>

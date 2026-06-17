@@ -47,9 +47,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GearFlow.Modules.Availabili
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GearFlow.Modules.Reservations.Application", "src\Modules\Reservations\GearFlow.Modules.Reservations.Application\GearFlow.Modules.Reservations.Application.csproj", "{5EADAEF5-74FC-4B26-900E-EC39EF17A1FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Modules.Availability.Contracts", "src\Modules\Availability\GearFlow.Modules.Availability.Contracts\GearFlow.Modules.Availability.Contracts.csproj", "{6D42C41E-B7A1-4910-AD8D-AB0302CE5826}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GearFlow.Modules.Availability.Contracts", "src\Modules\Availability\GearFlow.Modules.Availability.Contracts\GearFlow.Modules.Availability.Contracts.csproj", "{6D42C41E-B7A1-4910-AD8D-AB0302CE5826}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Modules.Catalog.Contracts", "src\Modules\Catalog\GearFlow.Modules.Catalog.Contracts\GearFlow.Modules.Catalog.Contracts.csproj", "{15E10800-2939-4EC4-BA95-B3208CE8A0FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GearFlow.Modules.Catalog.Contracts", "src\Modules\Catalog\GearFlow.Modules.Catalog.Contracts\GearFlow.Modules.Catalog.Contracts.csproj", "{15E10800-2939-4EC4-BA95-B3208CE8A0FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Modules.Reservations.Infrastructure", "src\Modules\Reservations\GearFlow.Modules.Reservations.Infrastructure\GearFlow.Modules.Reservations.Infrastructure.csproj", "{2D8CA823-81A8-4FC0-ACE5-330C2ED56B18}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Modules.Catalog.Infrastructure", "src\Modules\Catalog\GearFlow.Modules.Catalog.Infrastructure\GearFlow.Modules.Catalog.Infrastructure.csproj", "{C9CA7A3E-5FB7-4EB4-B597-5D4FDD82D3CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Modules.Availability.Infrastructure", "src\Modules\Availability\GearFlow.Modules.Availability.Infraastructure\GearFlow.Modules.Availability.Infrastructure.csproj", "{91AAB126-FE54-4692-A38D-700DB2595F87}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Modules.Catalog.Application", "src\Modules\Catalog\GearFlow.Modules.Catalog.Application\GearFlow.Modules.Catalog.Application.csproj", "{E039F6C2-1D1A-49ED-B876-4F2A0A0BFF1D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearFlow.Modules.Availability.Application", "src\Modules\Availability\GearFlow.Modules.Availability.Application\GearFlow.Modules.Availability.Application.csproj", "{85A6DB2D-FE98-4BB1-8785-E1B51A6FB4EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -101,6 +111,26 @@ Global
 		{15E10800-2939-4EC4-BA95-B3208CE8A0FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15E10800-2939-4EC4-BA95-B3208CE8A0FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15E10800-2939-4EC4-BA95-B3208CE8A0FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D8CA823-81A8-4FC0-ACE5-330C2ED56B18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D8CA823-81A8-4FC0-ACE5-330C2ED56B18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D8CA823-81A8-4FC0-ACE5-330C2ED56B18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D8CA823-81A8-4FC0-ACE5-330C2ED56B18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9CA7A3E-5FB7-4EB4-B597-5D4FDD82D3CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9CA7A3E-5FB7-4EB4-B597-5D4FDD82D3CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9CA7A3E-5FB7-4EB4-B597-5D4FDD82D3CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9CA7A3E-5FB7-4EB4-B597-5D4FDD82D3CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91AAB126-FE54-4692-A38D-700DB2595F87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91AAB126-FE54-4692-A38D-700DB2595F87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91AAB126-FE54-4692-A38D-700DB2595F87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91AAB126-FE54-4692-A38D-700DB2595F87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E039F6C2-1D1A-49ED-B876-4F2A0A0BFF1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E039F6C2-1D1A-49ED-B876-4F2A0A0BFF1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E039F6C2-1D1A-49ED-B876-4F2A0A0BFF1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E039F6C2-1D1A-49ED-B876-4F2A0A0BFF1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85A6DB2D-FE98-4BB1-8785-E1B51A6FB4EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85A6DB2D-FE98-4BB1-8785-E1B51A6FB4EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85A6DB2D-FE98-4BB1-8785-E1B51A6FB4EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85A6DB2D-FE98-4BB1-8785-E1B51A6FB4EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -128,6 +158,11 @@ Global
 		{5EADAEF5-74FC-4B26-900E-EC39EF17A1FA} = {F10C4FDB-8EDC-4BF0-8684-D6C1260FA711}
 		{6D42C41E-B7A1-4910-AD8D-AB0302CE5826} = {8AEEA008-8D96-4EB0-9BB4-E8E1AC243199}
 		{15E10800-2939-4EC4-BA95-B3208CE8A0FA} = {EAA9984E-1CB9-403E-8C23-5DEC32081579}
+		{2D8CA823-81A8-4FC0-ACE5-330C2ED56B18} = {F10C4FDB-8EDC-4BF0-8684-D6C1260FA711}
+		{C9CA7A3E-5FB7-4EB4-B597-5D4FDD82D3CD} = {EAA9984E-1CB9-403E-8C23-5DEC32081579}
+		{91AAB126-FE54-4692-A38D-700DB2595F87} = {8AEEA008-8D96-4EB0-9BB4-E8E1AC243199}
+		{E039F6C2-1D1A-49ED-B876-4F2A0A0BFF1D} = {EAA9984E-1CB9-403E-8C23-5DEC32081579}
+		{85A6DB2D-FE98-4BB1-8785-E1B51A6FB4EC} = {8AEEA008-8D96-4EB0-9BB4-E8E1AC243199}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D81CF4DA-74B2-4793-A12B-1313246BEA0F}
