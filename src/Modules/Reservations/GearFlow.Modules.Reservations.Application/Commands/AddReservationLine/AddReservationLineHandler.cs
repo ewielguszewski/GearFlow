@@ -52,7 +52,7 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
         if (offer.ActiveItemIds == null || offer.ActiveItemIds.Count == 0)
             throw new NoAvailableItemForOfferException(command.OfferVariantId);
         
-        var heldItemId = await _availabilityAllocator.TryAllocateItemAsync(offer.ActiveItemIds, reservation.Id, reservation.ReservedPeriod, cancellationToken);
+        var heldItemId = await _availabilityAllocator.TryAllocateItemAsync(offer.ActiveItemIds, offer.VariantId, reservation.Id, reservation.ReservedPeriod, cancellationToken);
         if (heldItemId is null)
             throw new NoAvailableItemForOfferException(command.OfferVariantId);
 
