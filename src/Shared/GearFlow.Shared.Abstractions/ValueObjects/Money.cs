@@ -2,10 +2,10 @@
 
 namespace GearFlow.Shared.Abstractions.ValueObjects;
 
-public readonly record struct Money
+public sealed record Money
 {
-    public decimal Amount { get; }
-    public CurrencyCode Currency { get; }
+    public decimal Amount { get; init; }
+    public CurrencyCode Currency { get; init; }
 
 
     private Money(decimal amount, CurrencyCode currency)
