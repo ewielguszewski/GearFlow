@@ -7,21 +7,13 @@ namespace GearFlow.Modules.Catalog.Domain.Entities;
 // Type-specific size validation can be introduced later through an EquipmentSize value object, based on EquipmentModel's type
 public class EquipmentVariant
 {
-    private decimal? _overriddenPriceAmount;
-    private string? _overriddenPriceCurrency;
-
     public Guid Id { get; private set; }
     public Guid EquipmentModelId { get; private set; }
     public EquipmentModel EquipmentModel { get; private set; } = default!;
 
     public string? DisplayName { get; private set; }
     public string? PublicNote { get; private set; }
-    public Money? OverriddenPrice =>
-    _overriddenPriceAmount is null || _overriddenPriceCurrency is null
-        ? null
-        : Money.Create(
-            _overriddenPriceAmount.Value,
-            CurrencyCode.From(_overriddenPriceCurrency));
+    public Money? OverriddenPrice { get; private set; }
 
     public string? Size { get; private set; }
 
@@ -36,8 +28,7 @@ public class EquipmentVariant
         EquipmentModelId = equipmentModelId;
         DisplayName = displayName;
         PublicNote = publicNote;
-        _overriddenPriceAmount = overriddenPrice?.Amount;
-        _overriddenPriceCurrency = overriddenPrice?.Currency.Value;
+        OverriddenPrice = overriddenPrice;
         Size = size;
     }
 
@@ -48,15 +39,9 @@ public class EquipmentVariant
         => new EquipmentVariant(equipmentModelId, displayName, publicNote, priceOverride, size);
 
     public void ChangePriceOverride(Money newPrice)
-    {
-         _overriddenPriceAmount = newPrice.Amount;
-        _overriddenPriceCurrency = newPrice.Currency.Value;
-    }
+        => OverriddenPrice = newPrice;
 
     public void ClearPriceOverride()
-    {
-        _overriddenPriceAmount = null;
-        _overriddenPriceCurrency = null;
-    }
+        => OverriddenPrice = null;
 }
 

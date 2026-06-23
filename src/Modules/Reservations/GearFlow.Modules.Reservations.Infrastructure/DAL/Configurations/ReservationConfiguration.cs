@@ -38,11 +38,10 @@ public sealed class ReservationConfiguration : IEntityTypeConfiguration<Reservat
             .IsRequired();
         
         builder.Property(x => x.UpdatedAt);
-        
+
         builder.Property(x => x.Currency)
-            .HasConversion<string>()
-            .IsRequired();
-        
+            .ConfigureCurrencyCode("currency");
+
         builder.ComplexProperty(x => x.PaidAmount)
             .ConfigureMoney("paid_amount")
             .IsRequired();

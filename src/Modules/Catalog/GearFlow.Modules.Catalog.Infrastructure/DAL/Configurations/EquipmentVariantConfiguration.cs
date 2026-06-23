@@ -18,13 +18,9 @@ public class EquipmentVariantConfiguration : IEntityTypeConfiguration<EquipmentV
 
         builder.Property(x => x.PublicNote);
 
-        builder.Property<decimal?>("_overriddenPriceAmount")
-            .HasColumnName("overridden_price_amount")
-            .HasPrecision(18, 2);
-
-        builder.Property<string?>("_overriddenPriceCurrency")
-            .HasColumnName("overridden_price_currency")
-            .HasMaxLength(3);
+        builder.ComplexProperty(x => x.OverriddenPrice, b =>
+            b.ConfigureMoney("overridden_price")
+        );
 
         builder.Property(x => x.Size);
     }

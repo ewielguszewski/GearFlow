@@ -6,9 +6,6 @@ namespace GearFlow.Modules.Catalog.Domain.Entities;
 
 public class EquipmentModel
 {
-    private decimal? _basePriceAmount;
-    private string? _basePriceCurrency;
-
     private readonly List<EquipmentVariant> _equipmentVariants = new();
 
     public Guid Id { get; private set; }
@@ -16,12 +13,7 @@ public class EquipmentModel
     public string Model { get; private set; } = default!;
     public string Slug { get; private set; } = default!;
     public string? Description { get; private set; }
-    public Money? BasePrice =>
-    _basePriceAmount is null || _basePriceCurrency is null
-        ? null
-        : Money.Create(
-            _basePriceAmount.Value,
-            CurrencyCode.From(_basePriceCurrency));
+    public Money? BasePrice { get; private set; }
     public bool IsPublished { get; private set; }
     public EquipmentModelType Type { get; private set; }
 
@@ -37,8 +29,7 @@ public class EquipmentModel
         Model = model;
         Slug = GenerateSlug(brand, model);
         Description = description;
-        _basePriceAmount = basePrice?.Amount;
-        _basePriceCurrency = basePrice?.Currency.Value;
+        BasePrice = basePrice;
         Type = type;
     }
 
@@ -78,10 +69,7 @@ public class EquipmentModel
     }
 
     public void ChangeBasePrice(Money basePrice)
-    {
-        _basePriceAmount = basePrice.Amount;
-        _basePriceCurrency = basePrice.Currency.Value;
-    }
+        => BasePrice = basePrice;
 
     public void Publish()
     {

@@ -1,6 +1,8 @@
 ﻿using GearFlow.Modules.Catalog.Domain.Entities;
+using GearFlow.Shared.Abstractions.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using GearFlow.Shared.Infrastructure.Postgres.Configurations;
 
 namespace GearFlow.Modules.Catalog.Infrastructure.DAL.Configurations;
 
@@ -21,13 +23,9 @@ public sealed class EquipmentModelConfiguration : IEntityTypeConfiguration<Equip
 
         builder.Property(x => x.Description);
 
-        builder.Property<decimal?>("_basePriceAmount")
-            .HasColumnName("base_price_amount")
-            .HasPrecision(18, 2);
-
-        builder.Property<string?>("_basePriceCurrency")
-            .HasColumnType("base_price_currency")
-            .HasMaxLength(3);
+        builder.ComplexProperty(x => x.BasePrice, b =>
+            b.ConfigureMoney("base_price")
+        );
 
         builder.Property(x => x.IsPublished)
             .IsRequired();
