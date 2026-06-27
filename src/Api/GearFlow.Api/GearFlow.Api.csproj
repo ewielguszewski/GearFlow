@@ -15,6 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Availability\GearFlow.Modules.Availability.Infrastructure\GearFlow.Modules.Availability.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Catalog\GearFlow.Modules.Catalog.Infrastructure\GearFlow.Modules.Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Reservations\GearFlow.Modules.Reservations.Infrastructure\GearFlow.Modules.Reservations.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Shared\GearFlow.Shared.Infrastructure\GearFlow.Shared.Infrastructure.csproj" />
   </ItemGroup>
 
