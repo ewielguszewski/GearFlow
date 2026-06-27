@@ -5,8 +5,8 @@ namespace GearFlow.Modules.Reservations.Domain.Repositories;
 public interface IReservationRepository
 {
     Task<Reservation?> GetAsync(Guid id, CancellationToken ct);
-    Task AddAsync(Reservation reservation, CancellationToken ct);
-    Task UpdateAsync(Reservation reservation, CancellationToken ct);
+    void Add(Reservation reservation);
+    void Update(Reservation reservation);
 
     Task<Reservation?> GetDraftByCustomerIdAsync(Guid customerId, CancellationToken ct);
 }
