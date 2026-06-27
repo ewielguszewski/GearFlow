@@ -30,12 +30,12 @@ public class CreateDraftReservationHandler : ICommandHandler<CreateDraftReservat
 
             existingDraftReservation.CancelReservation(CancellationReason.ReplacedByNewDraft);
 
-            await _reservationRepository.UpdateAsync(existingDraftReservation, cancellationToken);
+            _reservationRepository.Update(existingDraftReservation);
         }
 
         var reservation = Reservation.CreateDraft(command.Id, command.CustomerId, period, currency);
 
-        await _reservationRepository.AddAsync(reservation, cancellationToken);
+        _reservationRepository.Add(reservation);
     }
 }
 

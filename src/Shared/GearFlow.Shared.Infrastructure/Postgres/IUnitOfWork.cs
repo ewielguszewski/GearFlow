@@ -1,6 +1,7 @@
-﻿namespace GearFlow.Shared.Infrastructure.Postgres;
+namespace GearFlow.Shared.Infrastructure.Postgres;
 
 public interface IUnitOfWork
 {
-    Task ExecuteAsync(Func<Task> action, CancellationToken cancellationToken = default);
+    Task SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task ExecuteInTransactionAsync(Func<Task> action, CancellationToken cancellationToken = default);
 }

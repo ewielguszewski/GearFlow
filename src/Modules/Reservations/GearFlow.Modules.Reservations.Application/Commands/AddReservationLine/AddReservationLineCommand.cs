@@ -6,4 +6,4 @@ public sealed record AddReservationLineCommand(
     Guid ReservationId,
     Guid ReservationLineId,
     Guid OfferVariantId
-    ) : ICommand;
+    ) : ICrossModuleCommand;

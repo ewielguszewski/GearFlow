@@ -41,7 +41,7 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
             reservation.Expire(now);
 
             await _availabilityAllocator.ReleaseReservationAllocationsAsync(reservation.Id, cancellationToken);
-            await _reservationRepository.UpdateAsync(reservation, cancellationToken);
+            _reservationRepository.Update(reservation);
 
             throw new DomainException("Reservation draft has expired.");
         }
@@ -73,7 +73,7 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
         // ReservationLineId is currently command-provided mainly for testability.
         reservation.AddReservationLine(command.ReservationLineId, snapshot, now);
 
-        await _reservationRepository.UpdateAsync(reservation, cancellationToken);
+        _reservationRepository.Update(reservation);
     }
 }
 
