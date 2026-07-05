@@ -26,8 +26,8 @@ internal sealed class AvailabilityAllocator : IAvailabilityAllocator
 
         var blockedItemIds = await _dbContext.Bookings
             .Where(x => candidates.Contains(x.ItemId)
-                        && x.TimePeriod.Start < timePeriod.End
-                        && x.TimePeriod.End > timePeriod.Start)
+                        && x.TimePeriod.Start <= timePeriod.End
+                        && x.TimePeriod.End >= timePeriod.Start)
             .Select(x => x.ItemId)
             .Distinct()
             .ToArrayAsync(cancellationToken);

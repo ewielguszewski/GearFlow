@@ -18,5 +18,5 @@ public record struct DateRange
     }
 
     public bool Overlaps(DateRange other)
-        => Start < other.End && End > other.Start;
+        => Start <= other.End && End >= other.Start;
 }
