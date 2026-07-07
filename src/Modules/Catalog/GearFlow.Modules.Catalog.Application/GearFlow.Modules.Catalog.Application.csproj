@@ -11,4 +11,9 @@
     <ProjectReference Include="..\GearFlow.Modules.Catalog.Domain\GearFlow.Modules.Catalog.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DTO\Admin\" />
+    <Folder Include="DTO\Public\" />
+  </ItemGroup>
+
 </Project>
