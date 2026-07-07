@@ -1,7 +1,6 @@
 using GearFlow.Modules.Catalog.Contracts;
 using GearFlow.Modules.Catalog.Domain.Enums;
 using GearFlow.Modules.Catalog.Infrastructure.DAL;
-using GearFlow.Shared.Abstractions.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace GearFlow.Modules.Catalog.Infrastructure.Readers;
@@ -17,21 +16,9 @@ internal sealed class CatalogOfferReader : ICatalogOfferReader
 
     public async Task<ReservableOfferDto?> GetReservableOfferAsync(Guid offerVariantId, CancellationToken cancellationToken = default)
     {
-        var offer = await _dbContext.EquipmentVariants
-            .AsNoTracking()
-            .Where(v => v.Id == offerVariantId && v.EquipmentModel.IsPublished)
-            .Select(v => new ReservableOfferDto
-            (
-                v.Id,
-                v.DisplayName,
-                v.EquipmentModel.Brand,
-                v.EquipmentModel.Model,
-                v.PublicNote,
-                v.EquipmentModel.BasePrice!,
-                v.OverriddenPrice,
-                v.Size,
-                Array.Empty<Guid>()
-            ))
+        var offer = await CatalogOfferQuery.SelectRows(
+                CatalogOfferQuery.BuildPublishedOffers(_dbContext)
+                    .Where(x => x.Id == offerVariantId))
             .FirstOrDefaultAsync(cancellationToken);
 
         if (offer is null)
@@ -39,19 +26,26 @@ internal sealed class CatalogOfferReader : ICatalogOfferReader
 
         var activeItemIds = await GetActiveItemIdsAsync([offerVariantId], cancellationToken);
 
-        return offer with
-        {
-            ActiveItemIds = GetItemIds(activeItemIds, offerVariantId)
-        };
+        return new ReservableOfferDto(
+            offer.VariantId,
+            offer.DisplayName,
+            offer.Brand,
+            offer.Model,
+            offer.PublicNote,
+            offer.BasePrice,
+            offer.OverriddenPrice,
+            offer.Size,
+            GetItemIds(activeItemIds, offer.VariantId));
     }
 
     public async Task<IReadOnlyCollection<CatalogOfferCandidateDto>> SearchOfferCandidatesAsync(OfferSearchCriteria criteria, CancellationToken cancellationToken = default)
     {
-        var offers = await ApplyFilters(BuildPublicOffersQuery(), criteria)
-        .OrderBy(x => x.Brand)
-        .ThenBy(x => x.Model)
-        .ThenBy(x => x.VariantId)
-        .ToArrayAsync(cancellationToken);
+        var offerQuery = CatalogOfferQuery.ApplyFilters(
+                CatalogOfferQuery.BuildPublishedOffers(_dbContext),
+                criteria);
+
+        var offers = await CatalogOfferQuery.SelectRows(CatalogOfferQuery.OrderByCatalog(offerQuery))
+            .ToArrayAsync(cancellationToken);
 
         if (offers.Length == 0)
             return [];
@@ -70,26 +64,11 @@ internal sealed class CatalogOfferReader : ICatalogOfferReader
                 x.Brand,
                 x.Model,
                 x.Type.ToString(),
-                x.OverriddenPrice ?? x.BasePrice,
+                x.Price,
                 x.Size,
                 GetItemIds(activeItemIds, x.VariantId)))
             .ToArray();
     }
-
-    private IQueryable<PublicOfferRow> BuildPublicOffersQuery()
-        => _dbContext.EquipmentVariants
-             .AsNoTracking()
-             .Where(x => x.EquipmentModel.IsPublished)
-             .Select(v => new PublicOfferRow(
-                 v.Id,
-                 v.EquipmentModel.Brand,
-                 v.EquipmentModel.Model,
-                 v.EquipmentModel.Type,
-                 v.EquipmentModel.BasePrice!,
-                 v.OverriddenPrice,
-                 v.Size,
-                 v.PublicNote));
-
 
     private async Task<IReadOnlyDictionary<Guid, IReadOnlyCollection<Guid>>> GetActiveItemIdsAsync(IReadOnlyCollection<Guid> variantIds, CancellationToken cancellationToken)
     {
@@ -109,65 +88,4 @@ internal sealed class CatalogOfferReader : ICatalogOfferReader
 
     private static IReadOnlyCollection<Guid> GetItemIds(IReadOnlyDictionary<Guid, IReadOnlyCollection<Guid>> itemIdsByVariant, Guid variantId)
         => itemIdsByVariant.TryGetValue(variantId, out var itemIds) ? itemIds : [];
-
-    private static IQueryable<PublicOfferRow> ApplyFilters(IQueryable<PublicOfferRow> query, OfferSearchCriteria criteria)
-    {
-        if (!string.IsNullOrWhiteSpace(criteria.Type))
-        {
-            if (!Enum.TryParse<EquipmentModelType>(
-                    criteria.Type,
-                    ignoreCase: true,
-                    out var type))
-            {
-                return query.Where(_ => false);
-            }
-
-            query = query.Where(x => x.Type == type);
-        }
-
-        if (!string.IsNullOrWhiteSpace(criteria.Brand))
-            query = query.Where(x => x.Brand == criteria.Brand.Trim());
-
-        if (!string.IsNullOrWhiteSpace(criteria.Model))
-            query = query.Where(x => x.Model == criteria.Model.Trim());
-
-        if (!string.IsNullOrWhiteSpace(criteria.Size))
-            query = query.Where(x => x.Size != null && x.Size == criteria.Size.Trim());
-
-        if (criteria.MinPrice is { } min)
-        {
-            query = query.Where(x =>
-                (x.OverriddenPrice != null ?
-                x.OverriddenPrice.Currency.Value
-                : x.BasePrice.Currency.Value) == min.Currency.Value
-                &&
-                (x.OverriddenPrice != null ?
-                x.OverriddenPrice.Amount
-                : x.BasePrice.Amount) >= min.Amount);
-        }
-
-        if (criteria.MaxPrice is { } max)
-        {
-            query = query.Where(x =>
-                (x.OverriddenPrice != null ?
-                x.OverriddenPrice.Currency.Value
-                : x.BasePrice.Currency.Value) == max.Currency.Value
-                &&
-                (x.OverriddenPrice != null ?
-                x.OverriddenPrice.Amount
-                : x.BasePrice.Amount) <= max.Amount);
-        }
-
-        return query;
-    }
-
-    private sealed record PublicOfferRow(
-        Guid VariantId,
-        string Brand,
-        string Model,
-        EquipmentModelType Type,
-        Money BasePrice,
-        Money? OverriddenPrice,
-        string? Size,
-        string? PublicNote);
 }
