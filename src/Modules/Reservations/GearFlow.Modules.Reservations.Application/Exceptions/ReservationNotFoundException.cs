@@ -2,7 +2,7 @@ using GearFlow.Shared.Abstractions.Common;
 
 namespace GearFlow.Modules.Reservations.Application.Exceptions;
 
-public class ReservationNotFoundException : AppException
+public class ReservationNotFoundException : NotFoundException
 {
     public Guid ReservationId { get; }
 

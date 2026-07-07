@@ -2,7 +2,7 @@
 
 namespace GearFlow.Modules.Reservations.Application.Exceptions;
 
-public class OfferNotAvailableException : AppException
+public class OfferNotAvailableException : ConflictException
 {
     public Guid OfferVariantId { get; }
 
