@@ -1,8 +1,10 @@
 using GearFlow.Shared.Abstractions.Time;
 using GearFlow.Shared.Infrastructure.Commands;
+using GearFlow.Shared.Infrastructure.Exceptions;
 using GearFlow.Shared.Infrastructure.Postgres;
 using GearFlow.Shared.Infrastructure.Queries;
 using GearFlow.Shared.Infrastructure.Time;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -12,6 +14,7 @@ public static class Extensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IList<Assembly> assemblies)
     {
+        services.AddTransient<ErrorHandlerMiddleware>();
         services.AddSingleton<IClock, UtcClock>();
         services.AddCommands(assemblies);
         services.AddQueries(assemblies);
@@ -21,5 +24,11 @@ public static class Extensions
         services.AddScoped<IUnitOfWork, EfPostgresUnitOfWork>();
 
         return services;
+    }
+
+    public static WebApplication UseInfrastructure(this WebApplication app)
+    {
+        app.UseMiddleware<ErrorHandlerMiddleware>();
+        return app;
     }
 }

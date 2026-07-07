@@ -19,6 +19,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+app.UseInfrastructure();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
