@@ -12,6 +12,10 @@ public static class Extensions
     {
         services.AddPostgres<CatalogDbContext>();
         services.AddScoped<ICatalogOfferReader, CatalogOfferReader>();
+        services.AddScoped<ICatalogRepository, CatalogRepository>();
+        services.AddScoped<ICatalogAdminService, CatalogAdminService>();
+        services.AddScoped<ICatalogBrowsingService, CatalogBrowsingService>();
+        services.AddScoped<ICatalogBrowsingReader, CatalogBrowsingReader>();
 
         return services;
     }
