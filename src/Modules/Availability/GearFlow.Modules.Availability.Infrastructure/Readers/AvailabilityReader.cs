@@ -30,8 +30,8 @@ internal sealed class AvailabilityReader : IAvailabilityReader
         var blockedItemIds = await _dbContext.Bookings
             .AsNoTracking()
             .Where(x => itemIds.Contains(x.ItemId)
-                        && x.TimePeriod.Start < period.End
-                        && x.TimePeriod.End > period.Start)
+                        && x.TimePeriod.Start <= period.End
+                        && x.TimePeriod.End >= period.Start)
             .Select(x => x.ItemId)
             .Distinct()
             .ToArrayAsync(cancellationToken);
