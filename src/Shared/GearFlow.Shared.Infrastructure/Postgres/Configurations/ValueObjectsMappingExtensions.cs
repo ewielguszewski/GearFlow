@@ -22,6 +22,25 @@ public static class ValueObjectsMappingExtensions
         return builder;
     }
 
+    public static OwnedNavigationBuilder<TEntity, Money> ConfigureMoney<TEntity>(
+        this OwnedNavigationBuilder<TEntity, Money> builder,
+        string columnPrefix)
+        where TEntity : class
+    {
+        builder.Property(x => x.Amount)
+            .HasColumnName($"{columnPrefix}_amount")
+            .HasPrecision(18, 2);
+
+        builder.Property(x => x.Currency)
+            .HasColumnName($"{columnPrefix}_currency")
+            .HasConversion(
+                currency => currency.Value,
+                value => CurrencyCode.From(value))
+            .HasMaxLength(3);
+
+        return builder;
+    }
+
     public static ComplexPropertyBuilder<DateRange> ConfigureDateRange(this ComplexPropertyBuilder<DateRange> builder, string columnPrefix)
     {
         builder.Property(x => x.Start)

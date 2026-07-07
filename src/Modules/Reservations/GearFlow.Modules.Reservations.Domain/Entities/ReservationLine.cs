@@ -17,6 +17,8 @@ public class ReservationLine
 
     public Money LineTotalPrice { get; private set; } = default!;
 
+    private ReservationLine() { } // EF
+
     private ReservationLine(Guid id, Guid reservationId, OfferSnapshot item, Money lineTotalPrice)
     {
         Id = id;

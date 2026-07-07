@@ -40,6 +40,13 @@ public class Reservation : AggregateRoot
 
     public IReadOnlyCollection<ReservationLine> ReservationLines => _reservationLines;
 
+    private Reservation()
+    {
+        Currency = default!;
+        PaidAmount = default!;
+        TotalPrice = default!;
+    }
+
     private Reservation(Guid id, Guid customerId, DateRange reservedPeriod, CurrencyCode currency)
     {
         Id = id;
