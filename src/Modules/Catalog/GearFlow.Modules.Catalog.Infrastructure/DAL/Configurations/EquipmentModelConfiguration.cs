@@ -23,9 +23,11 @@ public sealed class EquipmentModelConfiguration : IEntityTypeConfiguration<Equip
 
         builder.Property(x => x.Description);
 
-        builder.ComplexProperty(x => x.BasePrice, b =>
+        builder.OwnsOne(x => x.BasePrice, b =>
             b.ConfigureMoney("base_price")
         );
+        builder.Navigation(x => x.BasePrice)
+            .IsRequired(false);
 
         builder.Property(x => x.IsPublished)
             .IsRequired();

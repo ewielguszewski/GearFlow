@@ -18,9 +18,11 @@ public class EquipmentVariantConfiguration : IEntityTypeConfiguration<EquipmentV
 
         builder.Property(x => x.PublicNote);
 
-        builder.ComplexProperty(x => x.OverriddenPrice, b =>
+        builder.OwnsOne(x => x.OverriddenPrice, b =>
             b.ConfigureMoney("overridden_price")
         );
+        builder.Navigation(x => x.OverriddenPrice)
+            .IsRequired(false);
 
         builder.Property(x => x.Size);
     }

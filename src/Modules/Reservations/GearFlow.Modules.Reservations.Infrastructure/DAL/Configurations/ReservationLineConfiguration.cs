@@ -9,6 +9,9 @@ public sealed class ReservationLineConfiguration : IEntityTypeConfiguration<Rese
 {
     public void Configure(EntityTypeBuilder<ReservationLine> builder)
     {
+        builder.Property(x => x.Id)
+            .ValueGeneratedNever();
+
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.ReservationId)

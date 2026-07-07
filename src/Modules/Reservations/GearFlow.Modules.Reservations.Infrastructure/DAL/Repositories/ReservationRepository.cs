@@ -22,7 +22,7 @@ internal sealed class ReservationRepository : IReservationRepository
         => _dbContext.Reservations.Add(reservation);
 
     public void Update(Reservation reservation)
-    {
+        => _dbContext.Reservations.Update(reservation);
 
     public Task<Reservation?> GetDraftByCustomerIdAsync(Guid customerId, CancellationToken ct)
         => _dbContext.Reservations

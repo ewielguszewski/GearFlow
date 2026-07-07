@@ -14,6 +14,14 @@ public sealed class ReservationConfiguration : IEntityTypeConfiguration<Reservat
         builder.Property(x => x.Version)
             .IsRowVersion();
 
+        builder.HasMany(x => x.ReservationLines)
+            .WithOne(x => x.Reservation)
+            .HasForeignKey(x => x.ReservationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(x => x.ReservationLines)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         builder.Property(x => x.CustomerId)
             .IsRequired();
 

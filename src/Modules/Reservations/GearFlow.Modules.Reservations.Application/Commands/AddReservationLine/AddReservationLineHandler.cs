@@ -36,12 +36,11 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
         if (!reservation.IsDraft)
             throw new DomainException("Only draft reservations can be modified.");
 
-        if (reservation.IsDraftExpired(now))
+        if (reservation.IsDraftExpired(now)) // todo: actually it won't work
         {
             reservation.Expire(now);
 
             await _availabilityAllocator.ReleaseReservationAllocationsAsync(reservation.Id, cancellationToken);
-            _reservationRepository.Update(reservation);
 
             throw new DomainException("Reservation draft has expired.");
         }
@@ -72,9 +71,5 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
         // todo: Introduce explicit idempotency key for AddReservationLine.
         // ReservationLineId is currently command-provided mainly for testability.
         reservation.AddReservationLine(command.ReservationLineId, snapshot, now);
-
-        _reservationRepository.Update(reservation);
     }
 }
-
-// todo: Wrap Availability allocation and Reservation update in one Unit of Work once persistence is introduced.
