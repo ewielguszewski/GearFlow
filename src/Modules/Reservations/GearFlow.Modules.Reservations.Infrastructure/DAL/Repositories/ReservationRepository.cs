@@ -29,5 +29,5 @@ internal sealed class ReservationRepository : IReservationRepository
             .Include(x => x.ReservationLines)
             .Where(x => x.CustomerId == customerId && x.Status == ReservationStatus.Draft)
             .OrderByDescending(x => x.CreatedAt)
-            .FirstOrDefaultAsync(ct); // need to think here if we can assure that there will be only one draft
+            .FirstOrDefaultAsync(ct);
 }

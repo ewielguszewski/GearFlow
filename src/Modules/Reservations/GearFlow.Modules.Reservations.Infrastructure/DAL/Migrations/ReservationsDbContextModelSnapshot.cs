@@ -109,6 +109,10 @@ namespace GearFlow.Modules.Reservations.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CustomerId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 'Draft'");
+
                     b.ToTable("Reservations", "reservations");
                 });
 

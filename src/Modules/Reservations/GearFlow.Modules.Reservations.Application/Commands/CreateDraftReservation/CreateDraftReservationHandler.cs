@@ -36,5 +36,3 @@ public class CreateDraftReservationHandler : ICommandHandler<CreateDraftReservat
         _reservationRepository.Add(reservation);
     }
 }
-
-//  todo: Add unique constraint on db when implementing DAL

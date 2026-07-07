@@ -25,6 +25,10 @@ public sealed class ReservationConfiguration : IEntityTypeConfiguration<Reservat
         builder.Property(x => x.CustomerId)
             .IsRequired();
 
+        builder.HasIndex(x => x.CustomerId)
+            .IsUnique()
+            .HasFilter("\"Status\" = 'Draft'");
+
         builder.ComplexProperty(x => x.ReservedPeriod)
             .ConfigureDateRange("reserved_period")
             .IsRequired();
