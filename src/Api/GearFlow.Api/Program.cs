@@ -1,5 +1,6 @@
 using GearFlow.Modules.Availability.Infrastructure;
 using GearFlow.Modules.Catalog.Infrastructure;
+using GearFlow.Modules.Catalog.Infrastructure.DAL.Seeding;
 using GearFlow.Modules.Reservations.Application.Commands.CreateDraftReservation;
 using GearFlow.Modules.Reservations.Infrastructure;
 using GearFlow.Shared.Infrastructure;
@@ -23,6 +24,10 @@ app.UseInfrastructure();
 
 if (app.Environment.IsDevelopment())
 {
+    await using var scope = app.Services.CreateAsyncScope();
+    await scope.ServiceProvider
+        .GetRequiredService<CatalogDbSeeder>().SeedAsync();
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }
