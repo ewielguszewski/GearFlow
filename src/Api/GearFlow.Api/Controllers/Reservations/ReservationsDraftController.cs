@@ -1,5 +1,7 @@
 ﻿using GearFlow.Modules.Reservations.Application.Commands.AddReservationLine;
+using GearFlow.Modules.Reservations.Application.Commands.ConfirmReservationDraft;
 using GearFlow.Modules.Reservations.Application.Commands.CreateDraftReservation;
+using GearFlow.Modules.Reservations.Application.Commands.RemoveReservationLine;
 using GearFlow.Modules.Reservations.Application.Queries.GetAvailableOffers;
 using GearFlow.Modules.Reservations.Application.Queries.GetReservationDraft;
 using GearFlow.Shared.Abstractions.Commands;
@@ -18,14 +20,19 @@ public class ReservationsDraftController : ControllerBase
 
     private readonly ICommandHandler<CreateDraftReservationCommand> _createDraftHandler;
     private readonly ICommandHandler<AddReservationLineCommand> _addLineHandler;
+    private readonly ICommandHandler<RemoveReservationLineCommand> _removeLineHandler;
+    private readonly ICommandHandler<ConfirmReservationDraftCommand> _confirmDraftHandler;
     private readonly IQueryHandler<GetAvailableOffers, IEnumerable<AvailableOfferDto>> _getAvailableOffersHandler;
     private readonly IQueryHandler<GetReservationDraft, ReservationDraftDto?> _getReservationDraftHandler;
 
     public ReservationsDraftController(ICommandHandler<CreateDraftReservationCommand> createDraftHandler, ICommandHandler<AddReservationLineCommand> addLineHandler,
+        ICommandHandler<RemoveReservationLineCommand> removeLineHandler, ICommandHandler<ConfirmReservationDraftCommand> confirmDraftHandler,
         IQueryHandler<GetAvailableOffers, IEnumerable<AvailableOfferDto>> getAvailableOffersHandler, IQueryHandler<GetReservationDraft, ReservationDraftDto?> getReservationDraftHandler)
     {
         _createDraftHandler = createDraftHandler;
         _addLineHandler = addLineHandler;
+        _removeLineHandler = removeLineHandler;
+        _confirmDraftHandler = confirmDraftHandler;
         _getAvailableOffersHandler = getAvailableOffersHandler;
         _getReservationDraftHandler = getReservationDraftHandler;
     }
@@ -63,7 +70,7 @@ public class ReservationsDraftController : ControllerBase
             request.Brand,
             request.Model,
             CreateMoney(request.MinPrice, currency),
-            CreateMoney(request.MaxPrice, currency), 
+            CreateMoney(request.MaxPrice, currency),
             request.Size,
             request.Page,
             request.PageSize
@@ -97,8 +104,29 @@ public class ReservationsDraftController : ControllerBase
         return CreatedAtRoute(GetReservationDraftRouteName, new { draftId }, new { reservationLineId });
     }
 
+    [HttpDelete("drafts/{draftId:guid}/lines/{lineId:guid}")]
+    public async Task<ActionResult> RemoveLineAsync([FromRoute] Guid draftId, [FromRoute] Guid lineId, CancellationToken cancellationToken)
+    {
+        await _removeLineHandler.HandleAsync(new RemoveReservationLineCommand(draftId, lineId), cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpPost("drafts/{draftId:guid}/confirm")]
+    public async Task<ActionResult> ConfirmDraftAsync([FromRoute] Guid draftId, [FromBody] ConfirmReservationDraftRequest request, CancellationToken cancellationToken)
+    {
+        await _confirmDraftHandler.HandleAsync(new ConfirmReservationDraftCommand(draftId, request.PaymentMethod), cancellationToken);
+
+        return Ok(new { reservationId = draftId });
+    }
+
     private static Money? CreateMoney(decimal? amount, CurrencyCode currency)
         => amount.HasValue ? Money.Create(amount.Value, currency) : null;
+}
+
+public sealed class ConfirmReservationDraftRequest
+{
+    public string PaymentMethod { get; set; } = default!;
 }
 
 public sealed class CreateDraftReservationRequest

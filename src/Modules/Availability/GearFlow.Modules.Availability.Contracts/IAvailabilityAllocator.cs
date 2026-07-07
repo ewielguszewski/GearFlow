@@ -6,4 +6,5 @@ public interface IAvailabilityAllocator
 {
     Task<Guid?> TryAllocateItemAsync(IEnumerable<Guid> itemIds, Guid variantId, Guid sourceId, DateRange timePeriod, CancellationToken cancellationToken = default);
     Task ReleaseReservationAllocationsAsync(Guid sourceId, CancellationToken cancellationToken = default);
+    Task ReleaseReservationItemAllocationAsync(Guid sourceId, Guid itemId, CancellationToken cancellationToken = default);
 }

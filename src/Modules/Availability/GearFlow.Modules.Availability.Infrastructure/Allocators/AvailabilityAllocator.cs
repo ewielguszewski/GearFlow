@@ -53,4 +53,13 @@ internal sealed class AvailabilityAllocator : IAvailabilityAllocator
 
         _dbContext.Bookings.RemoveRange(bookings);
     }
+
+    public async Task ReleaseReservationItemAllocationAsync(Guid sourceId, Guid itemId, CancellationToken cancellationToken = default)
+    {
+        var bookings = await _dbContext.Bookings
+            .Where(x => x.Source == BookingType.Reservation && x.SourceId == sourceId && x.ItemId == itemId)
+            .ToArrayAsync(cancellationToken);
+
+        _dbContext.Bookings.RemoveRange(bookings);
+    }
 }

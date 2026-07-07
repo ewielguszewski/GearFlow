@@ -106,6 +106,9 @@ public class Reservation : AggregateRoot
     {
         EnsureDraftNotExpired(utcNow);
 
+        if (ReservationLines.Count == 0)
+            throw new DomainException("Reservation is empty");
+
         SelectedPaymentMethod = paymentMethod;
         Status = ReservationStatus.PendingPayment;
     }
