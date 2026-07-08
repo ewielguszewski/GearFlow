@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore GearFlow.sln
+
+      - name: Build
+        run: dotnet build GearFlow.sln --configuration Release --no-restore
+
+  unit-tests:
+    needs: build
+    name: unit-tests (${{ matrix.name }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: catalog
+            project: tests/Modules/Catalog/GearFlow.Modules.Catalog.Tests.Unit/GearFlow.Modules.Catalog.Tests.Unit.csproj
+          - name: reservations
+            project: tests/Modules/Reservations/GearFlow.Reservations.Tests.Unit/GearFlow.Reservations.Tests.Unit.csproj
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Test
+        run: dotnet test ${{ matrix.project }} --configuration Release --verbosity normal
