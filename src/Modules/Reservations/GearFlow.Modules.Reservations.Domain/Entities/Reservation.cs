@@ -47,21 +47,24 @@ public class Reservation : AggregateRoot
         TotalPrice = default!;
     }
 
-    private Reservation(Guid id, Guid customerId, DateRange reservedPeriod, CurrencyCode currency)
+    private Reservation(Guid id, Guid customerId, DateRange reservedPeriod, CurrencyCode currency, DateTime utcNow)
     {
+        if (reservedPeriod.Start.Date < utcNow.Date)
+            throw new DomainException("Reservation start date cannot be before draft creation date.");
+
         Id = id;
         CustomerId = customerId;
         ReservedPeriod = reservedPeriod;
         Status = ReservationStatus.Draft;
-        CreatedAt = DateTime.UtcNow;
+        CreatedAt = utcNow;
         TtlExpiresAt = CreatedAt.AddMinutes(TtlBufferMinutes);
         Currency = currency;
         TotalPrice = Money.ZeroFromCurrency(Currency);
         PaidAmount = Money.ZeroFromCurrency(Currency);
     }
 
-    public static Reservation CreateDraft(Guid id, Guid customerId, DateRange reservedPeriod, CurrencyCode currency)
-        => new Reservation(id, customerId, reservedPeriod, currency);
+    public static Reservation CreateDraft(Guid id, Guid customerId, DateRange reservedPeriod, CurrencyCode currency, DateTime utcNow)
+        => new Reservation(id, customerId, reservedPeriod, currency, utcNow);
 
     public void RemoveReservationLine(Guid reservationLineId, DateTime utcNow)
     {
@@ -148,7 +151,7 @@ public class Reservation : AggregateRoot
     {
         if (Status != ReservationStatus.Draft)
             return false;
-        if (utcNow < TtlExpiresAt)
+        if (utcNow <= TtlExpiresAt)
             return false;
         return true;
     }

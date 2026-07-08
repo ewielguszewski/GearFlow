@@ -2,6 +2,7 @@
 using GearFlow.Modules.Reservations.Domain.Entities;
 using GearFlow.Modules.Reservations.Domain.Repositories;
 using GearFlow.Shared.Abstractions.Commands;
+using GearFlow.Shared.Abstractions.Time;
 using GearFlow.Shared.Abstractions.ValueObjects;
 
 namespace GearFlow.Modules.Reservations.Application.Commands.CreateDraftReservation;
@@ -10,17 +11,20 @@ public class CreateDraftReservationHandler : ICommandHandler<CreateDraftReservat
 {
     private readonly IReservationRepository _reservationRepository;
     private readonly IAvailabilityAllocator _availabilityAllocator;
+    private readonly IClock _clock;
 
-    public CreateDraftReservationHandler(IReservationRepository reservationRepository, IAvailabilityAllocator availabilityAllocator)
+    public CreateDraftReservationHandler(IReservationRepository reservationRepository, IAvailabilityAllocator availabilityAllocator, IClock clock)
     {
         _reservationRepository = reservationRepository;
         _availabilityAllocator = availabilityAllocator;
+        _clock = clock;
     }
 
     public async Task HandleAsync(CreateDraftReservationCommand command, CancellationToken cancellationToken = default)
     {
-        var period = new DateRange(command.From, command.To);
+        var period = new DateRange(command.From.Date, command.To.Date);
         var currency = CurrencyCode.From(command.Currency);
+        var now = _clock.Current();
 
         var existingDraftReservation = await _reservationRepository.GetDraftByCustomerIdAsync(command.CustomerId, cancellationToken);
         if (existingDraftReservation != null)
@@ -31,7 +35,7 @@ public class CreateDraftReservationHandler : ICommandHandler<CreateDraftReservat
             existingDraftReservation.CancelReservation(CancellationReason.ReplacedByNewDraft);
         }
 
-        var reservation = Reservation.CreateDraft(command.Id, command.CustomerId, period, currency);
+        var reservation = Reservation.CreateDraft(command.Id, command.CustomerId, period, currency, now);
 
         _reservationRepository.Add(reservation);
     }

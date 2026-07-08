@@ -9,6 +9,13 @@ public sealed class ReservationConfiguration : IEntityTypeConfiguration<Reservat
 {
     public void Configure(EntityTypeBuilder<Reservation> builder)
     {
+        builder.ToTable("Reservations", "reservations", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_Reservations_ReservedPeriod_Start_NotBeforeCreatedAtUtcDate",
+                "\"reserved_period_from\" >= ((\"CreatedAt\" AT TIME ZONE 'UTC')::date)");
+        });
+
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Version)
