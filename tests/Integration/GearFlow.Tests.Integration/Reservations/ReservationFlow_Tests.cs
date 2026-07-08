@@ -1,0 +1,204 @@
+using GearFlow.Modules.Availability.Core.Entities;
+using GearFlow.Modules.Availability.Infrastructure.DAL;
+using GearFlow.Modules.Reservations.Domain.Entities;
+using GearFlow.Modules.Reservations.Infrastructure.DAL;
+using GearFlow.Shared.Abstractions.ValueObjects;
+using GearFlow.Tests.Integration.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System.Net;
+using System.Net.Http.Json;
+
+namespace GearFlow.Tests.Integration.Reservations;
+
+public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
+{
+    private readonly GearFlowIntegrationFixture _fixture;
+
+    public ReservationFlow_Tests(GearFlowIntegrationFixture fixture)
+    {
+        _fixture = fixture;
+    }
+
+    [Fact]
+    public async Task reservation_draft_flow_should_hold_release_and_confirm_item()
+    {
+        var client = CreateClient();
+        var draftId = await CreateDraftAsync(client, Guid.NewGuid());
+        var offer = await GetFirstAvailableOfferAsync(client, draftId);
+
+        var lineId = await AddLineAsync(client, draftId, offer.VariantId);
+
+        var draftWithLine = await GetDraftAsync(client, draftId);
+        Assert.Equal("Draft", draftWithLine.Status);
+        Assert.Single(draftWithLine.ReservedItems);
+        Assert.Equal(lineId, draftWithLine.ReservedItems.Single().ReservationLineId);
+        Assert.Equal(1, await CountBookingsAsync(draftId));
+
+        var removeResponse = await client.DeleteAsync($"/api/reservations/drafts/{draftId}/lines/{lineId}");
+        Assert.Equal(HttpStatusCode.NoContent, removeResponse.StatusCode);
+
+        var draftAfterRemove = await GetDraftAsync(client, draftId);
+        Assert.Empty(draftAfterRemove.ReservedItems);
+        Assert.Equal(0, await CountBookingsAsync(draftId));
+
+        await AddLineAsync(client, draftId, offer.VariantId);
+
+        var confirmResponse = await client.PostAsJsonAsync(
+            $"/api/reservations/drafts/{draftId}/confirm",
+            new { paymentMethod = "CashOnPickup" });
+        Assert.Equal(HttpStatusCode.OK, confirmResponse.StatusCode);
+
+        var confirmedDraft = await GetDraftAsync(client, draftId);
+        Assert.Equal("Confirmed", confirmedDraft.Status);
+        Assert.Equal(1, await CountBookingsAsync(draftId));
+    }
+
+    [Fact]
+    public async Task creating_second_draft_for_customer_should_leave_only_one_active_draft()
+    {
+        var client = CreateClient();
+        var customerId = Guid.NewGuid();
+
+        await CreateDraftAsync(client, customerId);
+        var secondDraftId = await CreateDraftAsync(client, customerId);
+
+        using var scope = _fixture.ApiFactory.Services.CreateScope();
+        var reservations = scope.ServiceProvider.GetRequiredService<ReservationsDbContext>();
+        var drafts = await reservations.Reservations
+            .Where(x => x.CustomerId == customerId)
+            .ToArrayAsync();
+
+        Assert.Equal(2, drafts.Length);
+        Assert.Single(drafts.Where(x => x.Status == ReservationStatus.Draft));
+        Assert.Contains(drafts, x => x.Id == secondDraftId && x.Status == ReservationStatus.Draft);
+        Assert.Contains(drafts, x => x.Status == ReservationStatus.Cancelled && x.CancReason == CancellationReason.ReplacedByNewDraft);
+    }
+
+    [Fact]
+    public async Task item_booking_overlap_constraint_should_reject_same_item_in_inclusive_period()
+    {
+        using var scope = _fixture.ApiFactory.Services.CreateScope();
+        var availability = scope.ServiceProvider.GetRequiredService<AvailabilityDbContext>();
+        var itemId = Guid.NewGuid();
+        var variantId = Guid.NewGuid();
+        var start = DateTime.UtcNow.Date.AddDays(1);
+
+        availability.Bookings.Add(ItemBooking.Create(
+            itemId,
+            variantId,
+            new DateRange(start, start.AddDays(2)),
+            Guid.NewGuid(),
+            BookingType.Reservation));
+        await availability.SaveChangesAsync();
+
+        availability.Bookings.Add(ItemBooking.Create(
+            itemId,
+            variantId,
+            new DateRange(start.AddDays(2), start.AddDays(4)),
+            Guid.NewGuid(),
+            BookingType.Reservation));
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => availability.SaveChangesAsync());
+    }
+
+    private HttpClient CreateClient()
+        => _fixture.ApiFactory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+    private static async Task<Guid> CreateDraftAsync(HttpClient client, Guid customerId)
+    {
+        var start = DateTime.UtcNow.Date.AddDays(1);
+        var response = await client.PostAsJsonAsync("/api/reservations/drafts", new
+        {
+            customerId,
+            from = start,
+            to = start.AddDays(2),
+            currency = "PLN"
+        });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<CreateDraftResponse>();
+        Assert.NotNull(body);
+        return body.ReservationId;
+    }
+
+    private static async Task<AvailableOfferResponse> GetFirstAvailableOfferAsync(HttpClient client, Guid draftId)
+    {
+        var offers = await client.GetFromJsonAsync<IReadOnlyCollection<AvailableOfferResponse>>(
+            $"/api/reservations/drafts/{draftId}/offers");
+
+        Assert.NotNull(offers);
+        Assert.NotEmpty(offers);
+
+        return offers.First(x => x.AvailableCount > 0);
+    }
+
+    private static async Task<Guid> AddLineAsync(HttpClient client, Guid draftId, Guid offerVariantId)
+    {
+        var response = await client.PostAsJsonAsync(
+            $"/api/reservations/drafts/{draftId}/lines",
+            new { offerVariantId });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<AddLineResponse>();
+        Assert.NotNull(body);
+        return body.ReservationLineId;
+    }
+
+    private static async Task<ReservationDraftResponse> GetDraftAsync(HttpClient client, Guid draftId)
+    {
+        var draft = await client.GetFromJsonAsync<ReservationDraftResponse>(
+            $"/api/reservations/drafts/{draftId}");
+
+        Assert.NotNull(draft);
+        return draft;
+    }
+
+    private async Task<int> CountBookingsAsync(Guid sourceId)
+    {
+        using var scope = _fixture.ApiFactory.Services.CreateScope();
+        var availability = scope.ServiceProvider.GetRequiredService<AvailabilityDbContext>();
+
+        return await availability.Bookings.CountAsync(x => x.Source == BookingType.Reservation && x.SourceId == sourceId);
+    }
+
+    private sealed record CreateDraftResponse(Guid ReservationId);
+
+    private sealed record AddLineResponse(Guid ReservationLineId);
+
+    private sealed record AvailableOfferResponse(
+        Guid VariantId,
+        string Brand,
+        string Model,
+        string Type,
+        decimal PricePerDay,
+        string Currency,
+        string? Size,
+        int AvailableCount);
+
+    private sealed record ReservationDraftResponse(
+        Guid DraftId,
+        Guid CustomerId,
+        string Status,
+        DateTime StartDate,
+        DateTime EndDate,
+        DateTime TtlExpiresAt,
+        bool IsExpired,
+        string Currency,
+        decimal TotalPrice,
+        IReadOnlyCollection<ReservedItemResponse> ReservedItems);
+
+    private sealed record ReservedItemResponse(
+        Guid ReservationLineId,
+        Guid VariantId,
+        string Model,
+        string Brand,
+        decimal BasePrice,
+        decimal LineTotalPrice);
+}

@@ -1,3 +1,4 @@
+using GearFlow.Api.Extensions;
 using GearFlow.Modules.Availability.Infrastructure;
 using GearFlow.Modules.Catalog.Infrastructure;
 using GearFlow.Modules.Catalog.Infrastructure.DAL.Seeding;
@@ -37,3 +38,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program;
