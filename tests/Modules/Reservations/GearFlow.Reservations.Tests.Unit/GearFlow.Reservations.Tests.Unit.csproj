@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Modules\Reservations\GearFlow.Modules.Reservations.Application\GearFlow.Modules.Reservations.Application.csproj" />
     <ProjectReference Include="..\..\..\..\src\Modules\Reservations\GearFlow.Modules.Reservations.Domain\GearFlow.Modules.Reservations.Domain.csproj" />
   </ItemGroup>
 

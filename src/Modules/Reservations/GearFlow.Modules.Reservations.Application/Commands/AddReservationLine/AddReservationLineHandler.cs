@@ -36,14 +36,8 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
         if (!reservation.IsDraft)
             throw new DomainException("Only draft reservations can be modified.");
 
-        if (reservation.IsDraftExpired(now)) // todo: actually it won't work
-        {
-            reservation.Expire(now);
-
-            await _availabilityAllocator.ReleaseReservationAllocationsAsync(reservation.Id, cancellationToken);
-
+        if (reservation.IsDraftExpired(now))
             throw new DomainException("Reservation draft has expired.");
-        }
 
         var offer = await _catalogOfferReader.GetReservableOfferAsync(command.OfferVariantId, cancellationToken);
         if (offer is null)
