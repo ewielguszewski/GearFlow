@@ -24,9 +24,7 @@ app.UseInfrastructure();
 
 if (app.Environment.IsDevelopment())
 {
-    await using var scope = app.Services.CreateAsyncScope();
-    await scope.ServiceProvider
-        .GetRequiredService<CatalogDbSeeder>().SeedAsync();
+   await app.InitializeDevelopmentDatabaseAsync();
 
     app.UseSwagger();
     app.UseSwaggerUI();
