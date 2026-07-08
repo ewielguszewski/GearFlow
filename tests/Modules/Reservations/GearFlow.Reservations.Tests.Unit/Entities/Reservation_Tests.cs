@@ -1,6 +1,7 @@
-﻿using GearFlow.Modules.Reservations.Domain.Entities;
+using GearFlow.Modules.Reservations.Domain.Entities;
 using GearFlow.Modules.Reservations.Domain.ValueObjects;
 using GearFlow.Shared.Abstractions.Common;
+using GearFlow.Shared.Abstractions.Time;
 using GearFlow.Shared.Abstractions.ValueObjects;
 using Shouldly;
 
@@ -8,88 +9,130 @@ namespace GearFlow.Reservations.Tests.Unit.Entities;
 
 public class Reservation_Tests
 {
+    private readonly IClock _clock;
+    private readonly CurrencyCode _currency;
+    private readonly Money _price;
+    private readonly DateRange _reservedPeriod;
+    private readonly OfferSnapshot _offerSnapshot;
+
+    public Reservation_Tests()
+    {
+        _clock = new FixedClock(new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc));
+        _currency = CurrencyCode.PLN;
+        _price = Money.CreateFromPln(1);
+        _reservedPeriod = new DateRange(_clock.Current().Date, _clock.Current().Date);
+        _offerSnapshot = OfferSnapshot.Create(Guid.NewGuid(), Guid.NewGuid(), "Name", "Brand", "Model", "Note", _price, PriceSource.CatalogModel, "S");
+    }
+
+    [Fact]
+    public void draft_start_date_should_not_be_before_created_date()
+    {
+        var pastPeriod = new DateRange(_clock.Current().Date.AddDays(-1), _clock.Current().Date);
+
+        var exception = Record.Exception(() => CreateDraft(pastPeriod));
+
+        exception.ShouldBeOfType<DomainException>();
+    }
+
+    [Fact]
+    public void draft_start_date_can_be_same_as_created_date()
+    {
+        var reservation = CreateDraft();
+
+        reservation.CreatedAt.ShouldBe(_clock.Current());
+        reservation.ReservedPeriod.Start.ShouldBe(_clock.Current().Date);
+    }
+
     [Fact]
     public void should_not_add_line_after_ttl()
     {
-        var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
+        var reservation = CreateDraft();
 
-        var exception = Record.Exception(() => 
-            reservation.AddReservationLine(Guid.NewGuid(), _offerSnapshot, DateTime.UtcNow.AddMinutes(Reservation.TtlBufferMinutes)));
+        var exception = Record.Exception(() =>
+            reservation.AddReservationLine(Guid.NewGuid(), _offerSnapshot, reservation.TtlExpiresAt.AddMinutes(1)));
 
-        exception.ShouldNotBeNull();
         exception.ShouldBeOfType<DomainException>();
     }
 
     [Fact]
     public void should_not_remove_line_after_ttl()
     {
-        var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
-        reservation.AddReservationLine(_reservationLine.Id, _offerSnapshot, DateTime.UtcNow);
+        var reservation = CreateDraft();
+        var reservationLineId = AddLine(reservation);
 
         var exception = Record.Exception(() =>
-            reservation.RemoveReservationLine(_reservationLine.Id, reservation.TtlExpiresAt.AddMinutes(1)));
+            reservation.RemoveReservationLine(reservationLineId, reservation.TtlExpiresAt.AddMinutes(1)));
 
-        exception.ShouldNotBeNull();
         exception.ShouldBeOfType<DomainException>();
     }
 
     [Fact]
     public void adding_and_removing_reservation_line_should_recalculate_total()
     {
-        var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
+        var reservation = CreateDraft();
 
-        reservation.AddReservationLine(_reservationLine.Id, _offerSnapshot, DateTime.UtcNow);
+        var reservationLineId = AddLine(reservation);
 
-        Assert.True(reservation.TotalPrice.Amount == _price.Amount);
+        reservation.TotalPrice.Amount.ShouldBe(_price.Amount);
 
-        reservation.RemoveReservationLine(_reservationLine.Id, DateTime.UtcNow);
+        reservation.RemoveReservationLine(reservationLineId, _clock.Current());
 
-        Assert.True(reservation.TotalPrice.Amount == 0);
+        reservation.TotalPrice.Amount.ShouldBe(0);
     }
 
     [Fact]
     public void adding_and_removing_reservation_line_should_extend_ttl()
     {
-        var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
+        var reservation = CreateDraft();
 
-        Assert.True(reservation.TtlExpiresAt == reservation.CreatedAt.AddMinutes(Reservation.TtlBufferMinutes));
+        reservation.TtlExpiresAt.ShouldBe(reservation.CreatedAt.AddMinutes(Reservation.TtlBufferMinutes));
 
-        reservation.AddReservationLine(Guid.NewGuid(), _offerSnapshot, DateTime.UtcNow);
+        AddLine(reservation);
 
-        Assert.True(reservation.TtlExpiresAt == reservation.CreatedAt.AddMinutes(Reservation.TtlBufferMinutes + Reservation.TtlUpdateBufferMinutes));
-
+        reservation.TtlExpiresAt.ShouldBe(reservation.CreatedAt.AddMinutes(Reservation.TtlBufferMinutes + Reservation.TtlUpdateBufferMinutes));
     }
 
     [Fact]
     public void exceeding_max_ttl_should_not_increase_ttl()
     {
-        var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
+        var reservation = CreateDraft();
 
-        int noOfTimes = (Reservation.MaxTtl - Reservation.TtlBufferMinutes) / Reservation.TtlUpdateBufferMinutes;
+        var noOfTimes = (Reservation.MaxTtl - Reservation.TtlBufferMinutes) / Reservation.TtlUpdateBufferMinutes;
 
-        for (int i = 0; i < noOfTimes + 1; i++)
+        for (var i = 0; i < noOfTimes + 1; i++)
         {
-            reservation.AddReservationLine(Guid.NewGuid(), _offerSnapshot, DateTime.UtcNow);
+            AddLine(reservation);
         }
 
-        Assert.True(reservation.TtlExpiresAt <= reservation.CreatedAt.AddMinutes(Reservation.MaxTtl));
+        reservation.TtlExpiresAt.ShouldBeLessThanOrEqualTo(reservation.CreatedAt.AddMinutes(Reservation.MaxTtl));
     }
 
     [Fact]
     public void pending_payment_should_select_payment_method_and_change_status()
     {
-        var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
+        var reservation = CreateDraft();
+        AddLine(reservation);
 
-        reservation.MarkAsPendingPayment(PaymentMethod.CreditCard, DateTime.UtcNow);
+        reservation.MarkAsPendingPayment(PaymentMethod.CreditCard, _clock.Current());
 
         reservation.Status.ShouldBe(ReservationStatus.PendingPayment);
         reservation.SelectedPaymentMethod.ShouldBe(PaymentMethod.CreditCard);
     }
 
     [Fact]
+    public void empty_draft_should_not_be_marked_as_pending_payment()
+    {
+        var reservation = CreateDraft();
+
+        var exception = Record.Exception(() => reservation.MarkAsPendingPayment(PaymentMethod.CreditCard, _clock.Current()));
+
+        exception.ShouldBeOfType<DomainException>();
+    }
+
+    [Fact]
     public void draft_without_payment_method_should_not_be_confirmed()
     {
-        var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
+        var reservation = CreateDraft();
 
         var exception = Record.Exception(() => reservation.MarkAsConfirmed());
 
@@ -99,8 +142,9 @@ public class Reservation_Tests
     [Fact]
     public void pending_payment_reservation_should_be_confirmed()
     {
-        var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
-        reservation.MarkAsPendingPayment(PaymentMethod.CreditCard, DateTime.UtcNow);
+        var reservation = CreateDraft();
+        AddLine(reservation);
+        reservation.MarkAsPendingPayment(PaymentMethod.CreditCard, _clock.Current());
 
         reservation.MarkAsConfirmed();
 
@@ -110,26 +154,37 @@ public class Reservation_Tests
     [Fact]
     public void confirmed_reservation_should_be_cancelled()
     {
-        var reservation = Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), _reservedPeriod, _currency);
-        reservation.MarkAsPendingPayment(PaymentMethod.CreditCard, DateTime.UtcNow);
+        var reservation = CreateDraft();
+        AddLine(reservation);
+        reservation.MarkAsPendingPayment(PaymentMethod.CreditCard, _clock.Current());
+
         reservation.CancelReservation(CancellationReason.EmployeeCancelled);
+
         reservation.Status.ShouldBe(ReservationStatus.Cancelled);
     }
 
-    private readonly PriceSource _priceSource;
-    private readonly CurrencyCode _currency;
-    private readonly Money _price;
-    private readonly DateRange _reservedPeriod;
-    private readonly OfferSnapshot _offerSnapshot;
-    private readonly ReservationLine _reservationLine;
+    private Reservation CreateDraft()
+        => CreateDraft(_reservedPeriod);
 
-    public Reservation_Tests()
+    private Reservation CreateDraft(DateRange reservedPeriod)
+        => Reservation.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), reservedPeriod, _currency, _clock.Current());
+
+    private Guid AddLine(Reservation reservation)
     {
-        _priceSource = PriceSource.CatalogModel;
-        _currency = CurrencyCode.PLN;
-        _price = Money.CreateFromPln(1);
-        _reservedPeriod = new DateRange(DateTime.UtcNow, DateTime.UtcNow);
-        _offerSnapshot = new OfferSnapshot(Guid.NewGuid(), Guid.NewGuid(), "Name", "Brand", "Model", "Note", _price, _priceSource, "S");
-        _reservationLine = ReservationLine.Create(Guid.NewGuid(), Guid.NewGuid(), _offerSnapshot, _price);
+        var reservationLineId = Guid.NewGuid();
+        reservation.AddReservationLine(reservationLineId, _offerSnapshot, _clock.Current());
+        return reservationLineId;
+    }
+
+    private sealed class FixedClock : IClock
+    {
+        private readonly DateTime _now;
+
+        public FixedClock(DateTime now)
+        {
+            _now = now;
+        }
+
+        public DateTime Current() => _now;
     }
 }
