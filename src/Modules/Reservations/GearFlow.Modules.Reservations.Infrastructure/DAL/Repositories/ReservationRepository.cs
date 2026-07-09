@@ -30,4 +30,12 @@ internal sealed class ReservationRepository : IReservationRepository
             .Where(x => x.CustomerId == customerId && x.Status == ReservationStatus.Draft)
             .OrderByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyCollection<Reservation>> GetExpiredDraftsAsync(DateTime utcNow, int batchSize, CancellationToken ct)
+        => await _dbContext.Reservations
+            .Include(x => x.ReservationLines)
+            .Where(x => x.Status == ReservationStatus.Draft && x.TtlExpiresAt < utcNow)
+            .OrderBy(x => x.TtlExpiresAt)
+            .Take(batchSize)
+            .ToArrayAsync(ct);
 }

@@ -26,7 +26,8 @@ internal sealed class GearFlowApiFactory : WebApplicationFactory<Program>
         {
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["postgres:connectionString"] = _connectionString
+                ["postgres:connectionString"] = _connectionString,
+                ["reservations:expiryCleanup:enabled"] = "false"
             });
         });
     }

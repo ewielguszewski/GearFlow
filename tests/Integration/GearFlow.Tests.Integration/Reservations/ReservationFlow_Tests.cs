@@ -1,6 +1,8 @@
 using GearFlow.Modules.Availability.Core.Entities;
 using GearFlow.Modules.Availability.Infrastructure.DAL;
 using GearFlow.Modules.Reservations.Domain.Entities;
+using GearFlow.Modules.Reservations.Domain.ValueObjects;
+using GearFlow.Modules.Reservations.Infrastructure.Background;
 using GearFlow.Modules.Reservations.Infrastructure.DAL;
 using GearFlow.Shared.Abstractions.ValueObjects;
 using GearFlow.Tests.Integration.Infrastructure;
@@ -103,6 +105,31 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
         await Assert.ThrowsAsync<DbUpdateException>(() => availability.SaveChangesAsync());
     }
 
+    [Fact]
+    public async Task expired_draft_processor_should_cancel_expired_drafts_and_release_reservation_bookings()
+    {
+        using var scope = _fixture.ApiFactory.Services.CreateScope();
+        var reservations = scope.ServiceProvider.GetRequiredService<ReservationsDbContext>();
+        var availability = scope.ServiceProvider.GetRequiredService<AvailabilityDbContext>();
+        var processor = scope.ServiceProvider.GetRequiredService<IExpiredDraftReservationProcessor>();
+
+        var expiredDraft = CreateDraftWithLine(DateTime.UtcNow.AddMinutes(-10));
+        var activeDraft = CreateDraftWithLine(DateTime.UtcNow);
+        reservations.Reservations.AddRange(expiredDraft.Reservation, activeDraft.Reservation);
+        availability.Bookings.AddRange(expiredDraft.Booking, activeDraft.Booking);
+        await reservations.SaveChangesAsync();
+        await availability.SaveChangesAsync();
+
+        var processedCount = await processor.ProcessExpiredDraftsAsync();
+
+        Assert.Equal(1, processedCount);
+        Assert.Equal(ReservationStatus.Cancelled, expiredDraft.Reservation.Status);
+        Assert.Equal(CancellationReason.DraftExpired, expiredDraft.Reservation.CancReason);
+        Assert.Equal(ReservationStatus.Draft, activeDraft.Reservation.Status);
+        Assert.Equal(0, await CountBookingsAsync(expiredDraft.Reservation.Id));
+        Assert.Equal(1, await CountBookingsAsync(activeDraft.Reservation.Id));
+    }
+
     private HttpClient CreateClient()
         => _fixture.ApiFactory.CreateClient(new WebApplicationFactoryClientOptions
         {
@@ -168,6 +195,42 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
         return await availability.Bookings.CountAsync(x => x.Source == BookingType.Reservation && x.SourceId == sourceId);
     }
 
+    private static DraftWithBooking CreateDraftWithLine(DateTime createdAt)
+    {
+        var itemId = Guid.NewGuid();
+        var variantId = Guid.NewGuid();
+        var period = new DateRange(DateTime.UtcNow.Date.AddDays(1), DateTime.UtcNow.Date.AddDays(3));
+        var reservation = Reservation.CreateDraft(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            period,
+            CurrencyCode.PLN,
+            createdAt);
+
+        reservation.AddReservationLine(
+            Guid.NewGuid(),
+            OfferSnapshot.Create(
+                itemId,
+                variantId,
+                "Default",
+                "Brand",
+                "Model",
+                null,
+                Money.CreateFromPln(100),
+                PriceSource.CatalogModel,
+                "M"),
+            createdAt);
+
+        var booking = ItemBooking.Create(
+            itemId,
+            variantId,
+            period,
+            reservation.Id,
+            BookingType.Reservation);
+
+        return new DraftWithBooking(reservation, booking);
+    }
+
     private sealed record CreateDraftResponse(Guid ReservationId);
 
     private sealed record AddLineResponse(Guid ReservationLineId);
@@ -201,4 +264,6 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
         string Brand,
         decimal BasePrice,
         decimal LineTotalPrice);
+
+    private sealed record DraftWithBooking(Reservation Reservation, ItemBooking Booking);
 }

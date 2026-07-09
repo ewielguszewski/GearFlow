@@ -9,4 +9,5 @@ public interface IReservationRepository
     void Update(Reservation reservation);
 
     Task<Reservation?> GetDraftByCustomerIdAsync(Guid customerId, CancellationToken ct);
+    Task<IReadOnlyCollection<Reservation>> GetExpiredDraftsAsync(DateTime utcNow, int batchSize, CancellationToken ct);
 }

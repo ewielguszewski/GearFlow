@@ -85,6 +85,9 @@ public class RemoveReservationLineHandler_Tests
 
         public Task<Reservation?> GetDraftByCustomerIdAsync(Guid customerId, CancellationToken ct)
             => Task.FromResult<Reservation?>(_reservation.CustomerId == customerId && _reservation.IsDraft ? _reservation : null);
+
+        public Task<IReadOnlyCollection<Reservation>> GetExpiredDraftsAsync(DateTime utcNow, int batchSize, CancellationToken ct)
+            => Task.FromResult<IReadOnlyCollection<Reservation>>([]);
     }
 
     private sealed class FakeAvailabilityAllocator : IAvailabilityAllocator

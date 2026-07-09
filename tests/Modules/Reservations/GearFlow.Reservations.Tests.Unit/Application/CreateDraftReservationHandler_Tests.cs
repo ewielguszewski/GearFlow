@@ -85,6 +85,9 @@ public class CreateDraftReservationHandler_Tests
                                && _existingDraft.IsDraft
                 ? _existingDraft
                 : null);
+
+        public Task<IReadOnlyCollection<Reservation>> GetExpiredDraftsAsync(DateTime utcNow, int batchSize, CancellationToken ct)
+            => Task.FromResult<IReadOnlyCollection<Reservation>>([]);
     }
 
     private sealed class FakeAvailabilityAllocator : IAvailabilityAllocator
