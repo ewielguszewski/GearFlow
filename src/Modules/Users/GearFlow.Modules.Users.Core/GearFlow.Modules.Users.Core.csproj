@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.28" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.28" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.19.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\GearFlow.Shared.Abstractions\GearFlow.Shared.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Shared\GearFlow.Shared.Infrastructure\GearFlow.Shared.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
