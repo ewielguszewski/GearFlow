@@ -5,7 +5,7 @@ using GearFlow.Modules.Users.Core;
 using GearFlow.Modules.Reservations.Application.Commands.CreateDraftReservation;
 using GearFlow.Modules.Reservations.Infrastructure;
 using GearFlow.Shared.Infrastructure;
-using GearFlow.Modules.Users.Core.UserContext;
+using GearFlow.Shared.Abstractions.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 

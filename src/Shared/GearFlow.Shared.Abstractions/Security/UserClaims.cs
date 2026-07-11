@@ -1,4 +1,4 @@
-namespace GearFlow.Modules.Users.Core.UserContext;
+namespace GearFlow.Shared.Abstractions.Security;
 
 public static class UserClaims
 {

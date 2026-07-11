@@ -1,4 +1,5 @@
 ﻿using GearFlow.Modules.Reservations.Application.Exceptions;
+using GearFlow.Modules.Reservations.Application.Interfaces;
 using GearFlow.Modules.Reservations.Domain.Repositories;
 using GearFlow.Shared.Abstractions.Queries;
 using GearFlow.Shared.Abstractions.Time;
@@ -8,11 +9,13 @@ namespace GearFlow.Modules.Reservations.Application.Queries.GetReservationDraft;
 public sealed record GetReservationDraftHandler : IQueryHandler<GetReservationDraft, ReservationDraftDto?>
 {
     private readonly IReservationRepository _reservationRepository;
+    private readonly IReservationAuthorizationService _reservationAuthorizationService;
     private readonly IClock _clock;
 
-    public GetReservationDraftHandler(IReservationRepository reservationRepository, IClock clock)
+    public GetReservationDraftHandler(IReservationRepository reservationRepository, IReservationAuthorizationService reservationAuthorizationService, IClock clock)
     {
         _reservationRepository = reservationRepository;
+        _reservationAuthorizationService = reservationAuthorizationService; 
         _clock = clock;
     }
 
@@ -22,6 +25,8 @@ public sealed record GetReservationDraftHandler : IQueryHandler<GetReservationDr
         var draft = await _reservationRepository.GetAsync(query.DraftId, cancellationToken);
         if (draft == null)
             throw new ReservationNotFoundException(query.DraftId);
+
+        _reservationAuthorizationService.Authorize(draft);
 
         var isExpired = draft.IsDraftExpired(now);
 

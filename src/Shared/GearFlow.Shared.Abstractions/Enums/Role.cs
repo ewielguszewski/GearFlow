@@ -1,4 +1,4 @@
-﻿namespace GearFlow.Modules.Users.Core.Enums;
+﻿namespace GearFlow.Shared.Abstractions.Enums;
 
 public enum Role
 {

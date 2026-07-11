@@ -6,6 +6,7 @@ using GearFlow.Modules.Users.Core.Repositories;
 using GearFlow.Modules.Users.Core.Security;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using GearFlow.Modules.Users.Core.DAL.Seeding;
 
 namespace GearFlow.Modules.Users.Core;
 
@@ -18,6 +19,7 @@ public static class Extensions
         .AddScoped<IRefreshTokenRepository, RefreshTokenRepository>()
         .AddSecurity()
         .AddPostgres<UsersDbContext>()
+        .AddScoped<UserDbSeeder>()
         .AddAuthOptions()
         .AddAuth(configuration);
 }

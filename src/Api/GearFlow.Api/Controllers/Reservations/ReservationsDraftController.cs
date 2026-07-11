@@ -4,9 +4,11 @@ using GearFlow.Modules.Reservations.Application.Commands.CreateDraftReservation;
 using GearFlow.Modules.Reservations.Application.Commands.RemoveReservationLine;
 using GearFlow.Modules.Reservations.Application.Queries.GetAvailableOffers;
 using GearFlow.Modules.Reservations.Application.Queries.GetReservationDraft;
+using GearFlow.Shared.Abstractions.Security;
 using GearFlow.Shared.Abstractions.Commands;
 using GearFlow.Shared.Abstractions.Queries;
 using GearFlow.Shared.Abstractions.ValueObjects;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -14,6 +16,7 @@ namespace GearFlow.Api.Controllers.Reservations;
 
 [ApiController]
 [Route("api/reservations")]
+[Authorize]
 public class ReservationsDraftController : ControllerBase
 {
     private const string GetReservationDraftRouteName = "GetReservationDraft";
@@ -27,7 +30,9 @@ public class ReservationsDraftController : ControllerBase
 
     public ReservationsDraftController(ICommandHandler<CreateDraftReservationCommand> createDraftHandler, ICommandHandler<AddReservationLineCommand> addLineHandler,
         ICommandHandler<RemoveReservationLineCommand> removeLineHandler, ICommandHandler<ConfirmReservationDraftCommand> confirmDraftHandler,
-        IQueryHandler<GetAvailableOffers, IEnumerable<AvailableOfferDto>> getAvailableOffersHandler, IQueryHandler<GetReservationDraft, ReservationDraftDto?> getReservationDraftHandler)
+        IQueryHandler<GetAvailableOffers, IEnumerable<AvailableOfferDto>> getAvailableOffersHandler, IQueryHandler<GetReservationDraft,
+        ReservationDraftDto?> getReservationDraftHandler
+        )
     {
         _createDraftHandler = createDraftHandler;
         _addLineHandler = addLineHandler;
@@ -41,8 +46,9 @@ public class ReservationsDraftController : ControllerBase
     public async Task<ActionResult> CreateDraftAsync([FromBody] CreateDraftReservationRequest request, CancellationToken cancellationToken)
     {
         var reservationId = Guid.NewGuid();
+        var customerId = request.TargetCustomerId;
 
-        var command = new CreateDraftReservationCommand(reservationId, request.CustomerId, request.From, request.To, request.Currency ?? "PLN");
+        var command = new CreateDraftReservationCommand(reservationId, customerId, request.From, request.To, request.Currency ?? "PLN");
 
         await _createDraftHandler.HandleAsync(command, cancellationToken);
 
@@ -52,8 +58,6 @@ public class ReservationsDraftController : ControllerBase
     [HttpGet("drafts/{draftId:guid}", Name = GetReservationDraftRouteName)]
     public async Task<ActionResult<ReservationDraftDto>> GetReservationDraftAsync([FromRoute] Guid draftId, CancellationToken cancellationToken)
     {
-        // for now can take id from route, but in future we can take it from user context as can only have one draft per user
-
         var draft = await _getReservationDraftHandler.HandleAsync(new GetReservationDraft(draftId), cancellationToken);
 
         return Ok(draft);
@@ -131,10 +135,10 @@ public sealed class ConfirmReservationDraftRequest
 
 public sealed class CreateDraftReservationRequest
 {
-    public Guid CustomerId { get; init; }
     public DateTime From { get; init; }
     public DateTime To { get; init; }
     public string? Currency { get; init; } = "PLN";
+    public Guid? TargetCustomerId { get; init; }
 }
 
 public sealed record GetAvailableOffersRequest

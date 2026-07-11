@@ -1,5 +1,5 @@
-using GearFlow.Modules.Users.Core.Enums;
-using GearFlow.Modules.Users.Core.UserContext;
+using GearFlow.Shared.Abstractions.Enums;
+using GearFlow.Shared.Abstractions.Security;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace GearFlow.Api.Extensions;

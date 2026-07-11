@@ -2,7 +2,7 @@
 
 namespace GearFlow.Modules.Users.Core.Exceptions;
 
-public class InvalidRefreshTokenException : DomainException
+public class InvalidRefreshTokenException : UnauthorizedException
 {
     public InvalidRefreshTokenException() : base("Invalid refresh token.")
     {

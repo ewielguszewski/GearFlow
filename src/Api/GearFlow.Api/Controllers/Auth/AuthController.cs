@@ -1,6 +1,6 @@
 using GearFlow.Modules.Users.Core.Auth;
 using GearFlow.Modules.Users.Core.Auth.DTO;
-using GearFlow.Modules.Users.Core.UserContext;
+using GearFlow.Shared.Abstractions.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

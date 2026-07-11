@@ -1,4 +1,4 @@
-﻿using GearFlow.Modules.Users.Core.Enums;
+﻿using GearFlow.Shared.Abstractions.Enums;
 
 namespace GearFlow.Modules.Users.Core.Entities;
 

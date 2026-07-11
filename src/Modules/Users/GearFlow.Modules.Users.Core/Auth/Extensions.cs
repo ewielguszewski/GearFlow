@@ -1,5 +1,6 @@
-using GearFlow.Modules.Users.Core.Enums;
-using GearFlow.Modules.Users.Core.UserContext;
+using GearFlow.Shared.Abstractions.Enums;
+using GearFlow.Modules.Users.Core.Policies;
+using GearFlow.Shared.Abstractions.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -65,16 +66,19 @@ internal static class Extensions
                 };
             });
 
-        services.AddAuthorization(o =>
+        services.AddAuthorization(o => 
         {
-            o.AddPolicy("Admin", p =>
+            o.AddPolicy(AuthorizationPolicies.Admin, p =>
                 p.RequireRole(Role.Admin.ToString()));
 
-            o.AddPolicy("EmployeeOrAdmin", p =>
+            o.AddPolicy(AuthorizationPolicies.EmployeeOrAdmin, p =>
                 p.RequireRole(Role.Employee.ToString(), Role.Admin.ToString()));
 
-            o.AddPolicy("Customer", p =>
-                p.RequireRole(Role.Customer.ToString()));
+            o.AddPolicy(AuthorizationPolicies.Customer, p =>
+            {
+                p.RequireRole(Role.Customer.ToString());
+                p.RequireClaim(UserClaims.CustomerId);
+            });
         });
 
         return services;
