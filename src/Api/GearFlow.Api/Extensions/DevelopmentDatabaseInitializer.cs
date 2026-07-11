@@ -3,6 +3,7 @@ using GearFlow.Modules.Catalog.Infrastructure.DAL;
 using GearFlow.Modules.Catalog.Infrastructure.DAL.Seeding;
 using GearFlow.Modules.Reservations.Infrastructure.DAL;
 using GearFlow.Modules.Users.Core.DAL;
+using GearFlow.Modules.Users.Core.DAL.Seeding;
 using Microsoft.EntityFrameworkCore;
 
 namespace GearFlow.Api.Extensions;
@@ -21,6 +22,10 @@ internal static class DevelopmentDatabaseInitializer
 
         await serviceProvider
             .GetRequiredService<CatalogDbSeeder>()
+            .SeedAsync();
+
+        await serviceProvider
+            .GetRequiredService<UserDbSeeder>()
             .SeedAsync();
     }
 }
