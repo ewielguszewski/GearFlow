@@ -1,10 +1,13 @@
 using GearFlow.Modules.Catalog.Application.Services;
+using GearFlow.Modules.Users.Core.Policies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GearFlow.Api.Controllers.Catalog;
 
 [ApiController]
 [Route("api/admin/catalog")]
+[Authorize(Policy = AuthorizationPolicies.EmployeeOrAdmin)]
 public sealed class AdminCatalogController : ControllerBase
 {
     private readonly ICatalogAdminService _catalogAdminService;
