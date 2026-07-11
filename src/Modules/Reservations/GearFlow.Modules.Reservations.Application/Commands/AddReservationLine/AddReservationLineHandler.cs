@@ -6,6 +6,7 @@ using GearFlow.Modules.Availability.Contracts;
 using GearFlow.Modules.Catalog.Contracts;
 using GearFlow.Shared.Abstractions.Common;
 using GearFlow.Modules.Reservations.Domain.ValueObjects;
+using GearFlow.Modules.Reservations.Application.Interfaces;
 
 namespace GearFlow.Modules.Reservations.Application.Commands.AddReservationLine;
 
@@ -14,13 +15,16 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
     private readonly IReservationRepository _reservationRepository;
     private readonly ICatalogOfferReader _catalogOfferReader;
     private readonly IAvailabilityAllocator _availabilityAllocator;
+    private readonly IReservationAuthorizationService _reservationAuthorizationService;
     private readonly IClock _clock;
 
-    public AddReservationLineHandler(IReservationRepository reservationRepository, ICatalogOfferReader catalogOfferReader, IAvailabilityAllocator availabilityAllocator, IClock clock)
+    public AddReservationLineHandler(IReservationRepository reservationRepository, ICatalogOfferReader catalogOfferReader, IAvailabilityAllocator availabilityAllocator,
+        IReservationAuthorizationService reservationAuthorizationService, IClock clock)
     {
         _reservationRepository = reservationRepository;
         _catalogOfferReader = catalogOfferReader;
         _availabilityAllocator = availabilityAllocator;
+        _reservationAuthorizationService = reservationAuthorizationService;
         _clock = clock;
     }
 
@@ -32,6 +36,8 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
 
         if (reservation is null)
             throw new ReservationNotFoundException(command.ReservationId);
+
+        _reservationAuthorizationService.Authorize(reservation);
 
         if (!reservation.IsDraft)
             throw new DomainException("Only draft reservations can be modified.");

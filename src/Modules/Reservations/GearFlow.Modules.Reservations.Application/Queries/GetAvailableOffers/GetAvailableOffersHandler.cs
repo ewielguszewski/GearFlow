@@ -1,6 +1,7 @@
 ﻿using GearFlow.Modules.Availability.Contracts;
 using GearFlow.Modules.Catalog.Contracts;
 using GearFlow.Modules.Reservations.Application.Exceptions;
+using GearFlow.Modules.Reservations.Application.Interfaces;
 using GearFlow.Modules.Reservations.Domain.Repositories;
 using GearFlow.Shared.Abstractions.Queries;
 using GearFlow.Shared.Abstractions.Time;
@@ -10,13 +11,16 @@ namespace GearFlow.Modules.Reservations.Application.Queries.GetAvailableOffers;
 public sealed class GetAvailableOffersHandler : IQueryHandler<GetAvailableOffers, IEnumerable<AvailableOfferDto>>
 {
     private readonly IReservationRepository _reservationRepository;
+    private readonly IReservationAuthorizationService _reservationAuthorizationService;
     private readonly ICatalogOfferReader _catalogOfferReader;
     private readonly IAvailabilityReader _availabilityReader;
     private readonly IClock _clock;
 
-    public GetAvailableOffersHandler(IReservationRepository reservationRepository,ICatalogOfferReader catalogOfferReader, IAvailabilityReader availabilityReader, IClock clock)
+    public GetAvailableOffersHandler(IReservationRepository reservationRepository, IReservationAuthorizationService reservationAuthorizationService, 
+        ICatalogOfferReader catalogOfferReader, IAvailabilityReader availabilityReader, IClock clock)
     {
         _reservationRepository = reservationRepository;
+        _reservationAuthorizationService = reservationAuthorizationService;
         _catalogOfferReader = catalogOfferReader;
         _availabilityReader = availabilityReader;
         _clock = clock;
@@ -29,6 +33,8 @@ public sealed class GetAvailableOffersHandler : IQueryHandler<GetAvailableOffers
         var reservation = await _reservationRepository.GetAsync(query.DraftId, cancellationToken);
         if (reservation is null)
             throw new ReservationNotFoundException(query.DraftId);
+
+        _reservationAuthorizationService.Authorize(reservation);
 
         reservation.EnsureDraftNotExpired(now);
 

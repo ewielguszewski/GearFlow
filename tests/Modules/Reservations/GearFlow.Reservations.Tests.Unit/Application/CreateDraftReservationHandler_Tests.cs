@@ -1,18 +1,12 @@
-using GearFlow.Modules.Availability.Contracts;
 using GearFlow.Modules.Reservations.Application.Commands.CreateDraftReservation;
 using GearFlow.Modules.Reservations.Domain.Entities;
-using GearFlow.Modules.Reservations.Domain.Repositories;
-using GearFlow.Modules.Reservations.Domain.ValueObjects;
-using GearFlow.Shared.Abstractions.Time;
-using GearFlow.Shared.Abstractions.ValueObjects;
 using Shouldly;
+using static GearFlow.Reservations.Tests.Unit.Application.ReservationApplicationTestData;
 
 namespace GearFlow.Reservations.Tests.Unit.Application;
 
 public class CreateDraftReservationHandler_Tests
 {
-    private static readonly DateTime Now = new(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
-
     [Fact]
     public async Task existing_draft_with_lines_should_be_replaced_and_release_allocations()
     {
@@ -21,7 +15,11 @@ public class CreateDraftReservationHandler_Tests
         existingDraft.AddReservationLine(Guid.NewGuid(), CreateOfferSnapshot(), Now);
         var repository = new FakeReservationRepository(existingDraft);
         var availability = new FakeAvailabilityAllocator();
-        var handler = new CreateDraftReservationHandler(repository, availability, new FixedClock(Now));
+        var handler = new CreateDraftReservationHandler(
+            repository,
+            availability,
+            new FakeReservationAuthorizationService(),
+            new FixedClock(Now));
         var newReservationId = Guid.NewGuid();
 
         await handler.HandleAsync(new CreateDraftReservationCommand(
@@ -38,84 +36,25 @@ public class CreateDraftReservationHandler_Tests
         repository.AddedReservation.Id.ShouldBe(newReservationId);
     }
 
-    private static Reservation CreateDraft(Guid customerId)
-        => Reservation.CreateDraft(
-            Guid.NewGuid(),
-            customerId,
-            new DateRange(Now.Date.AddDays(1), Now.Date.AddDays(2)),
-            CurrencyCode.PLN,
-            Now);
-
-    private static OfferSnapshot CreateOfferSnapshot()
-        => OfferSnapshot.Create(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            "Variant",
-            "Brand",
-            "Model",
-            "Public note",
-            Money.CreateFromPln(100),
-            PriceSource.CatalogModel,
-            "M");
-
-    private sealed class FakeReservationRepository : IReservationRepository
+    [Fact]
+    public async Task new_draft_should_use_customer_id_resolved_by_authorization()
     {
-        private readonly Reservation? _existingDraft;
+        var customerId = Guid.NewGuid();
+        var repository = new FakeReservationRepository();
+        var handler = new CreateDraftReservationHandler(
+            repository,
+            new FakeAvailabilityAllocator(),
+            new FakeReservationAuthorizationService { ResolvedCustomerId = customerId },
+            new FixedClock(Now));
 
-        public FakeReservationRepository(Reservation? existingDraft)
-        {
-            _existingDraft = existingDraft;
-        }
+        await handler.HandleAsync(new CreateDraftReservationCommand(
+            Guid.NewGuid(),
+            null,
+            Now.Date.AddDays(1),
+            Now.Date.AddDays(2),
+            "PLN"));
 
-        public Reservation? AddedReservation { get; private set; }
-
-        public Task<Reservation?> GetAsync(Guid id, CancellationToken ct)
-            => Task.FromResult<Reservation?>(_existingDraft?.Id == id ? _existingDraft : null);
-
-        public void Add(Reservation reservation)
-            => AddedReservation = reservation;
-
-        public void Update(Reservation reservation)
-        {
-        }
-
-        public Task<Reservation?> GetDraftByCustomerIdAsync(Guid customerId, CancellationToken ct)
-            => Task.FromResult(_existingDraft is not null
-                               && _existingDraft.CustomerId == customerId
-                               && _existingDraft.IsDraft
-                ? _existingDraft
-                : null);
-
-        public Task<IReadOnlyCollection<Reservation>> GetExpiredDraftsAsync(DateTime utcNow, int batchSize, CancellationToken ct)
-            => Task.FromResult<IReadOnlyCollection<Reservation>>([]);
-    }
-
-    private sealed class FakeAvailabilityAllocator : IAvailabilityAllocator
-    {
-        public Guid? ReleasedSourceId { get; private set; }
-
-        public Task<Guid?> TryAllocateItemAsync(IEnumerable<Guid> itemIds, Guid variantId, Guid sourceId, DateRange timePeriod, CancellationToken cancellationToken = default)
-            => Task.FromResult<Guid?>(null);
-
-        public Task ReleaseReservationAllocationsAsync(Guid sourceId, CancellationToken cancellationToken = default)
-        {
-            ReleasedSourceId = sourceId;
-            return Task.CompletedTask;
-        }
-
-        public Task ReleaseReservationItemAllocationAsync(Guid sourceId, Guid itemId, CancellationToken cancellationToken = default)
-            => Task.CompletedTask;
-    }
-
-    private sealed class FixedClock : IClock
-    {
-        private readonly DateTime _now;
-
-        public FixedClock(DateTime now)
-        {
-            _now = now;
-        }
-
-        public DateTime Current() => _now;
+        repository.AddedReservation.ShouldNotBeNull();
+        repository.AddedReservation.CustomerId.ShouldBe(customerId);
     }
 }
