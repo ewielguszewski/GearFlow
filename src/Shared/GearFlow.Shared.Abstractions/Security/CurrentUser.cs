@@ -1,6 +1,6 @@
-using GearFlow.Modules.Users.Core.Enums;
+using GearFlow.Shared.Abstractions.Enums;
 
-namespace GearFlow.Modules.Users.Core.UserContext;
+namespace GearFlow.Shared.Abstractions.Security;
 
 public sealed record CurrentUser(Guid UserId, Guid? CustomerId, Role Role)
 {

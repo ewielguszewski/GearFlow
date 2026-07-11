@@ -1,6 +1,6 @@
 ﻿using GearFlow.Modules.Users.Core.Auth.DTO;
 using GearFlow.Modules.Users.Core.Entities;
-using GearFlow.Modules.Users.Core.Enums;
+using GearFlow.Shared.Abstractions.Enums;
 using GearFlow.Modules.Users.Core.Exceptions;
 using GearFlow.Modules.Users.Core.Repositories;
 using GearFlow.Modules.Users.Core.Security;
@@ -135,7 +135,7 @@ public class AuthService : IAuthService
             };
         }, cancellationToken);
 
-        return response;
+        return response!;
     }
 
     private RefreshToken CreateRefreshToken(Guid userId, DateTime utcNow)

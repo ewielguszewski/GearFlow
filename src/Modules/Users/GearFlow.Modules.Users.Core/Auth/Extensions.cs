@@ -1,6 +1,6 @@
-using GearFlow.Modules.Users.Core.Enums;
+using GearFlow.Shared.Abstractions.Enums;
 using GearFlow.Modules.Users.Core.Policies;
-using GearFlow.Modules.Users.Core.UserContext;
+using GearFlow.Shared.Abstractions.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,7 +75,10 @@ internal static class Extensions
                 p.RequireRole(Role.Employee.ToString(), Role.Admin.ToString()));
 
             o.AddPolicy(AuthorizationPolicies.Customer, p =>
-                p.RequireRole(Role.Customer.ToString()));
+            {
+                p.RequireRole(Role.Customer.ToString());
+                p.RequireClaim(UserClaims.CustomerId);
+            });
         });
 
         return services;

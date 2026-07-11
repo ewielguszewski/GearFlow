@@ -1,5 +1,5 @@
 using GearFlow.Modules.Users.Core.Entities;
-using GearFlow.Modules.Users.Core.UserContext;
+using GearFlow.Shared.Abstractions.Security;
 using GearFlow.Shared.Abstractions.Time;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
