@@ -4,12 +4,14 @@ using GearFlow.Modules.Reservations.Domain.Entities;
 using GearFlow.Modules.Reservations.Domain.ValueObjects;
 using GearFlow.Modules.Reservations.Infrastructure.Background;
 using GearFlow.Modules.Reservations.Infrastructure.DAL;
+using GearFlow.Modules.Users.Core.Auth.DTO;
 using GearFlow.Shared.Abstractions.ValueObjects;
 using GearFlow.Tests.Integration.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace GearFlow.Tests.Integration.Reservations;
@@ -26,33 +28,33 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
     [Fact]
     public async Task reservation_draft_flow_should_hold_release_and_confirm_item()
     {
-        var client = CreateClient();
-        var draftId = await CreateDraftAsync(client, Guid.NewGuid());
-        var offer = await GetFirstAvailableOfferAsync(client, draftId);
+        var customer = await SignUpCustomerAsync();
+        var draftId = await CreateDraftAsync(customer.Client);
+        var offer = await GetFirstAvailableOfferAsync(customer.Client, draftId);
 
-        var lineId = await AddLineAsync(client, draftId, offer.VariantId);
+        var lineId = await AddLineAsync(customer.Client, draftId, offer.VariantId);
 
-        var draftWithLine = await GetDraftAsync(client, draftId);
+        var draftWithLine = await GetDraftAsync(customer.Client, draftId);
         Assert.Equal("Draft", draftWithLine.Status);
         Assert.Single(draftWithLine.ReservedItems);
         Assert.Equal(lineId, draftWithLine.ReservedItems.Single().ReservationLineId);
         Assert.Equal(1, await CountBookingsAsync(draftId));
 
-        var removeResponse = await client.DeleteAsync($"/api/reservations/drafts/{draftId}/lines/{lineId}");
+        var removeResponse = await customer.Client.DeleteAsync($"/api/reservations/drafts/{draftId}/lines/{lineId}");
         Assert.Equal(HttpStatusCode.NoContent, removeResponse.StatusCode);
 
-        var draftAfterRemove = await GetDraftAsync(client, draftId);
+        var draftAfterRemove = await GetDraftAsync(customer.Client, draftId);
         Assert.Empty(draftAfterRemove.ReservedItems);
         Assert.Equal(0, await CountBookingsAsync(draftId));
 
-        await AddLineAsync(client, draftId, offer.VariantId);
+        await AddLineAsync(customer.Client, draftId, offer.VariantId);
 
-        var confirmResponse = await client.PostAsJsonAsync(
+        var confirmResponse = await customer.Client.PostAsJsonAsync(
             $"/api/reservations/drafts/{draftId}/confirm",
             new { paymentMethod = "CashOnPickup" });
         Assert.Equal(HttpStatusCode.OK, confirmResponse.StatusCode);
 
-        var confirmedDraft = await GetDraftAsync(client, draftId);
+        var confirmedDraft = await GetDraftAsync(customer.Client, draftId);
         Assert.Equal("Confirmed", confirmedDraft.Status);
         Assert.Equal(1, await CountBookingsAsync(draftId));
     }
@@ -60,16 +62,15 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
     [Fact]
     public async Task creating_second_draft_for_customer_should_leave_only_one_active_draft()
     {
-        var client = CreateClient();
-        var customerId = Guid.NewGuid();
+        var customer = await SignUpCustomerAsync();
 
-        await CreateDraftAsync(client, customerId);
-        var secondDraftId = await CreateDraftAsync(client, customerId);
+        await CreateDraftAsync(customer.Client);
+        var secondDraftId = await CreateDraftAsync(customer.Client);
 
         using var scope = _fixture.ApiFactory.Services.CreateScope();
         var reservations = scope.ServiceProvider.GetRequiredService<ReservationsDbContext>();
         var drafts = await reservations.Reservations
-            .Where(x => x.CustomerId == customerId)
+            .Where(x => x.CustomerId == customer.CustomerId)
             .ToArrayAsync();
 
         Assert.Equal(2, drafts.Length);
@@ -136,12 +137,41 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
             AllowAutoRedirect = false
         });
 
-    private static async Task<Guid> CreateDraftAsync(HttpClient client, Guid customerId)
+    private async Task<AuthenticatedCustomer> SignUpCustomerAsync()
+    {
+        var client = CreateClient();
+        var unique = Guid.NewGuid().ToString("N")[..12];
+
+        var request = new SignUpRequest
+        {
+            Email = $"c-{unique}@gf.test",
+            Password = "P@ssword123!",
+            FirstName = "Test",
+            LastName = "Customer",
+            PhoneNumber = "+48123123123"
+        };
+
+        var signUpResponse = await client.PostAsJsonAsync("/api/auth/sign-up", request);
+        Assert.Equal(HttpStatusCode.OK, signUpResponse.StatusCode);
+
+        var auth = await signUpResponse.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(auth);
+        Assert.False(string.IsNullOrWhiteSpace(auth.AccessToken));
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+
+        var me = await client.GetFromJsonAsync<MeResponse>("/api/auth/me");
+        Assert.NotNull(me);
+        Assert.NotNull(me.CustomerId);
+
+        return new AuthenticatedCustomer(client, me.CustomerId.Value);
+    }
+
+    private static async Task<Guid> CreateDraftAsync(HttpClient client)
     {
         var start = DateTime.UtcNow.Date.AddDays(1);
         var response = await client.PostAsJsonAsync("/api/reservations/drafts", new
         {
-            customerId,
             from = start,
             to = start.AddDays(2),
             currency = "PLN"
@@ -234,6 +264,12 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
     private sealed record CreateDraftResponse(Guid ReservationId);
 
     private sealed record AddLineResponse(Guid ReservationLineId);
+
+    private sealed record AuthResponse(string AccessToken, string RefreshToken);
+
+    private sealed record MeResponse(Guid UserId, Guid? CustomerId, string Role);
+
+    private sealed record AuthenticatedCustomer(HttpClient Client, Guid CustomerId);
 
     private sealed record AvailableOfferResponse(
         Guid VariantId,
