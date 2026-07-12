@@ -26,16 +26,14 @@ public sealed class ConfirmReservationDraftHandler : ICommandHandler<ConfirmRese
     {
         var now = _clock.Current();
 
-        var draft = await _reservationRepository.GetAsync(command.draftId, cancellationToken);
+        var customerId = _reservationAuthorizationService.ResolveCustomerId(command.TargetCustomerId);
+        var draft = await _reservationRepository.GetDraftByCustomerIdAsync(customerId, cancellationToken);
         if (draft == null)
-            throw new ReservationNotFoundException(command.draftId);
+            throw new ReservationNotFoundException(null);
 
         _reservationAuthorizationService.Authorize(draft);
 
-        if (!Enum.TryParse<PaymentMethod>(command.PaymentMethod, true, out var paymentMethod))
-            throw new DomainException("Invalid payment method");
-
-        draft.MarkAsPendingPayment(paymentMethod, now);
+        draft.MarkAsPendingPayment(command.PaymentMethod, now);
 
         draft.MarkAsConfirmed();
     }

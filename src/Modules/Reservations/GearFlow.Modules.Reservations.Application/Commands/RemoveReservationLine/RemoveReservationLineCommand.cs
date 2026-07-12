@@ -2,4 +2,4 @@
 
 namespace GearFlow.Modules.Reservations.Application.Commands.RemoveReservationLine;
 
-public sealed record RemoveReservationLineCommand(Guid draftId, Guid lineId) : ICrossModuleCommand;
+public sealed record RemoveReservationLineCommand(Guid? TargetCustomerId, Guid LineId) : ICrossModuleCommand;

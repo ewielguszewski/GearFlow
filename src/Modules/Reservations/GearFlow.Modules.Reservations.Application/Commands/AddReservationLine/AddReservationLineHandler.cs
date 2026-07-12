@@ -32,16 +32,16 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
     {
         var now = _clock.Current();
 
-        var reservation = await _reservationRepository.GetAsync(command.ReservationId, cancellationToken);
+        var user = _reservationAuthorizationService.ResolveCustomerId(command.TargetCustomerId);
 
+        var reservation = await _reservationRepository.GetDraftByCustomerIdAsync(user, cancellationToken);
         if (reservation is null)
-            throw new ReservationNotFoundException(command.ReservationId);
+            throw new ReservationNotFoundException(null);
 
         _reservationAuthorizationService.Authorize(reservation);
 
         if (!reservation.IsDraft)
             throw new DomainException("Only draft reservations can be modified.");
-
         if (reservation.IsDraftExpired(now))
             throw new DomainException("Reservation draft has expired.");
 
@@ -68,7 +68,6 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
             Size = offer.Size
         };
 
-        // todo: Introduce explicit idempotency key for AddReservationLine.
         // ReservationLineId is currently command-provided mainly for testability.
         reservation.AddReservationLine(command.ReservationLineId, snapshot, now);
     }

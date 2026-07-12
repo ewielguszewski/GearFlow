@@ -27,17 +27,18 @@ public class RemoveReservationLineHandler : ICommandHandler<RemoveReservationLin
     {
         var now = _clock.Current();
 
-        var draft = await _reservationRepository.GetAsync(command.draftId, cancellationToken);
+        var customerId = _reservationAuthorizationService.ResolveCustomerId(command.TargetCustomerId);
+        var draft = await _reservationRepository.GetDraftByCustomerIdAsync(customerId, cancellationToken);
         if (draft == null)
-            throw new ReservationNotFoundException(command.draftId);
+            throw new ReservationNotFoundException(null);
 
         _reservationAuthorizationService.Authorize(draft);
 
-        var line = draft.ReservationLines.SingleOrDefault(x => x.Id == command.lineId);
+        var line = draft.ReservationLines.SingleOrDefault(x => x.Id == command.LineId);
         if (line == null)
             return;
 
-        draft.RemoveReservationLine(command.lineId, now);
+        draft.RemoveReservationLine(command.LineId, now);
 
         await _availabilityAllocator.ReleaseReservationItemAllocationAsync(draft.Id, line.Item.ItemId, cancellationToken);
     }

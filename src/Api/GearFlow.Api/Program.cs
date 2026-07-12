@@ -6,6 +6,7 @@ using GearFlow.Modules.Reservations.Application.Commands.CreateDraftReservation;
 using GearFlow.Modules.Reservations.Infrastructure;
 using GearFlow.Shared.Infrastructure;
 using GearFlow.Shared.Abstractions.Security;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,11 @@ builder.Services.AddCatalogModule();
 builder.Services.AddAvailabilityModule();
 builder.Services.AddReservationsModule();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();
 
