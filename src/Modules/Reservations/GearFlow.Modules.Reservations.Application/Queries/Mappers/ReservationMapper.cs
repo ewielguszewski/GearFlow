@@ -61,4 +61,33 @@ public static class ReservationMapper
     {
         return reservations.Select(reservation => reservation.ToUpcomingReservationDto());
     }
+
+    public static AdminReservationDto ToAdminReservationDto(this Reservation reservation)
+    {
+        return new AdminReservationDto
+        (
+            reservation.Id,
+            reservation.CustomerId,
+            reservation.Status.ToString(),
+            reservation.CancReason?.ToString(),
+            reservation.ReservedPeriod.Start,
+            reservation.ReservedPeriod.End,
+            reservation.Currency.ToString(),
+            reservation.TotalPrice.Amount,
+            reservation.ReservationLines.Select(ri => new ReservedItemDto
+            (
+                ri.Id,
+                ri.Item.VariantId,
+                ri.Item.Model,
+                ri.Item.Brand,
+                ri.Item.UnitPrice.Amount,
+                ri.LineTotalPrice.Amount
+            )).ToList()
+        );
+    }
+
+    public static IEnumerable<AdminReservationDto> ToAdminReservationDtos(this IEnumerable<Reservation> reservations)
+    {
+        return reservations.Select(reservation => reservation.ToAdminReservationDto());
+    }
 }

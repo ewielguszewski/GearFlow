@@ -4,7 +4,6 @@ using GearFlow.Modules.Reservations.Application.Commands.CreateDraftReservation;
 using GearFlow.Modules.Reservations.Application.Commands.RemoveReservationLine;
 using GearFlow.Modules.Reservations.Application.Queries.GetAvailableOffers;
 using GearFlow.Modules.Reservations.Application.Queries.GetReservationDraft;
-using GearFlow.Shared.Abstractions.Security;
 using GearFlow.Shared.Abstractions.Commands;
 using GearFlow.Shared.Abstractions.Queries;
 using GearFlow.Shared.Abstractions.ValueObjects;
