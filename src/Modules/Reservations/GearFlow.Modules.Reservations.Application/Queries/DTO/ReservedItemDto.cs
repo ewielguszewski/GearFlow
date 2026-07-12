@@ -1,4 +1,4 @@
-﻿namespace GearFlow.Modules.Reservations.Application.Queries.GetReservationDraft;
+﻿namespace GearFlow.Modules.Reservations.Application.Queries.DTO;
 
 public sealed record ReservedItemDto(
     Guid ReservationLineId,

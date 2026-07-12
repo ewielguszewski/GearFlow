@@ -11,6 +11,9 @@ using GearFlow.Shared.Abstractions.ValueObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using GearFlow.Modules.Reservations.Application.Queries.DTO;
+using GearFlow.Modules.Reservations.Application.Queries.GetCurrentReservationDraft;
+using GearFlow.Modules.Reservations.Application.Queries.GetUpcomingReservationsForUser;
 
 namespace GearFlow.Api.Controllers.Reservations;
 
@@ -27,11 +30,14 @@ public class ReservationsDraftController : ControllerBase
     private readonly ICommandHandler<ConfirmReservationDraftCommand> _confirmDraftHandler;
     private readonly IQueryHandler<GetAvailableOffers, IEnumerable<AvailableOfferDto>> _getAvailableOffersHandler;
     private readonly IQueryHandler<GetReservationDraft, ReservationDraftDto?> _getReservationDraftHandler;
+    private readonly IQueryHandler<GetCurrentReservationDraft, ReservationDraftDto?> _getCurrentReservationDraftHandler;
+    private readonly IQueryHandler<GetUpcomingReservations, IEnumerable<UpcomingReservationDto>> _getUpcomingReservationsHandler;
 
     public ReservationsDraftController(ICommandHandler<CreateDraftReservationCommand> createDraftHandler, ICommandHandler<AddReservationLineCommand> addLineHandler,
         ICommandHandler<RemoveReservationLineCommand> removeLineHandler, ICommandHandler<ConfirmReservationDraftCommand> confirmDraftHandler,
         IQueryHandler<GetAvailableOffers, IEnumerable<AvailableOfferDto>> getAvailableOffersHandler, IQueryHandler<GetReservationDraft,
-        ReservationDraftDto?> getReservationDraftHandler
+        ReservationDraftDto?> getReservationDraftHandler, IQueryHandler<GetCurrentReservationDraft, ReservationDraftDto?> getCurrentReservationDraftHandler,
+        IQueryHandler<GetUpcomingReservations, IEnumerable<UpcomingReservationDto>> getUpcomingReservationsHandler
         )
     {
         _createDraftHandler = createDraftHandler;
@@ -40,15 +46,16 @@ public class ReservationsDraftController : ControllerBase
         _confirmDraftHandler = confirmDraftHandler;
         _getAvailableOffersHandler = getAvailableOffersHandler;
         _getReservationDraftHandler = getReservationDraftHandler;
+        _getCurrentReservationDraftHandler = getCurrentReservationDraftHandler;
+        _getUpcomingReservationsHandler = getUpcomingReservationsHandler;
     }
 
     [HttpPost("drafts")]
     public async Task<ActionResult> CreateDraftAsync([FromBody] CreateDraftReservationRequest request, CancellationToken cancellationToken)
     {
         var reservationId = Guid.NewGuid();
-        var customerId = request.TargetCustomerId;
 
-        var command = new CreateDraftReservationCommand(reservationId, customerId, request.From, request.To, request.Currency ?? "PLN");
+        var command = new CreateDraftReservationCommand(reservationId, request.TargetCustomerId, request.From, request.To, request.Currency ?? "PLN");
 
         await _createDraftHandler.HandleAsync(command, cancellationToken);
 
@@ -63,8 +70,27 @@ public class ReservationsDraftController : ControllerBase
         return Ok(draft);
     }
 
+    [HttpGet("drafts/current")]
+    public async Task<ActionResult<ReservationDraftDto?>> GetCurrentReservationDraftAsync([FromQuery] GetCurrentReservationDraft query, CancellationToken cancellationToken)
+    {
+        var draft = await _getCurrentReservationDraftHandler.HandleAsync(query, cancellationToken);
+        if (draft is null)
+        {
+            return NoContent();
+        }
+        return Ok(draft);
+    }
+
+    [HttpGet("upcoming")]
+    public async Task<ActionResult<IEnumerable<UpcomingReservationDto>>> GetUpcomingReservationsAsync([FromQuery] GetUpcomingReservations query, CancellationToken cancellationToken)
+    {
+        var reservations = await _getUpcomingReservationsHandler.HandleAsync(query, cancellationToken);
+        
+        return Ok(reservations);
+    }
+
     [HttpGet("drafts/{draftId:guid}/offers")]
-    public async Task<ActionResult<IReadOnlyCollection<AvailableOfferResponse>>> GetAvailableOffersAsync([FromRoute] Guid draftId, [FromQuery] GetAvailableOffersRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<AvailableOfferResponse>>> GetAvailableOffersAsync([FromRoute] Guid draftId, [FromQuery] GetAvailableOffersRequest request, CancellationToken cancellationToken)
     {
         var currency = CurrencyCode.From(request.Currency ?? "PLN");
 
