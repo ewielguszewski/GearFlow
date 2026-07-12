@@ -1,6 +1,4 @@
-﻿using GearFlow.Modules.Reservations.Domain.Entities;
-
-namespace GearFlow.Modules.Reservations.Application.Queries.GetReservationDraft;
+﻿namespace GearFlow.Modules.Reservations.Application.Queries.DTO;
 
 public sealed record ReservationDraftDto(
     Guid DraftId,

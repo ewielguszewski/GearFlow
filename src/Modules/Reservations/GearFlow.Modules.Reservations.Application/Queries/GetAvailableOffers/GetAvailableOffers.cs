@@ -4,7 +4,7 @@ using GearFlow.Shared.Abstractions.ValueObjects;
 namespace GearFlow.Modules.Reservations.Application.Queries.GetAvailableOffers;
 
 public sealed record GetAvailableOffers(
-    Guid DraftId,
+    Guid? TargetCustomerId,
     string? Type,
     string? Brand,
     string? Model,
@@ -14,4 +14,4 @@ public sealed record GetAvailableOffers(
 
     int Page,
     int PageSize
-    ) : IQuery<IEnumerable<AvailableOfferDto>>;
+    ) : IQuery<IEnumerable<AvailableOfferResult>>;

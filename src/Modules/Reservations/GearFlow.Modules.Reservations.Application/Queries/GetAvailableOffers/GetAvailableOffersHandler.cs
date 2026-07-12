@@ -8,7 +8,7 @@ using GearFlow.Shared.Abstractions.Time;
 
 namespace GearFlow.Modules.Reservations.Application.Queries.GetAvailableOffers;
 
-public sealed class GetAvailableOffersHandler : IQueryHandler<GetAvailableOffers, IEnumerable<AvailableOfferDto>>
+public sealed class GetAvailableOffersHandler : IQueryHandler<GetAvailableOffers, IEnumerable<AvailableOfferResult>>
 {
     private readonly IReservationRepository _reservationRepository;
     private readonly IReservationAuthorizationService _reservationAuthorizationService;
@@ -26,13 +26,15 @@ public sealed class GetAvailableOffersHandler : IQueryHandler<GetAvailableOffers
         _clock = clock;
     }
 
-    public async Task<IEnumerable<AvailableOfferDto>> HandleAsync(GetAvailableOffers query, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<AvailableOfferResult>> HandleAsync(GetAvailableOffers query, CancellationToken cancellationToken = default)
     {
         var now = _clock.Current();
 
-        var reservation = await _reservationRepository.GetAsync(query.DraftId, cancellationToken);
-        if (reservation is null)
-            throw new ReservationNotFoundException(query.DraftId);
+        var customerId = _reservationAuthorizationService.ResolveCustomerId(query.TargetCustomerId);
+
+        var reservation = await _reservationRepository.GetDraftByCustomerIdAsync(customerId, cancellationToken);
+        if (reservation == null)
+            throw new ReservationNotFoundException(null);
 
         _reservationAuthorizationService.Authorize(reservation);
 
@@ -65,7 +67,7 @@ public sealed class GetAvailableOffersHandler : IQueryHandler<GetAvailableOffers
             {
                 var availableCount = availableCounts.GetValueOrDefault(c.VariantId);
 
-                return new AvailableOfferDto(
+                return new AvailableOfferResult(
                     c.VariantId,
                     c.Brand,
                     c.Model,

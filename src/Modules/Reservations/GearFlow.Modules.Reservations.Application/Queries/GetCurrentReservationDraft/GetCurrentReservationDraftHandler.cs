@@ -1,32 +1,32 @@
-﻿using GearFlow.Modules.Reservations.Application.Exceptions;
-using GearFlow.Modules.Reservations.Application.Interfaces;
+﻿using GearFlow.Modules.Reservations.Application.Interfaces;
 using GearFlow.Modules.Reservations.Application.Queries.DTO;
 using GearFlow.Modules.Reservations.Application.Queries.Mappers;
 using GearFlow.Modules.Reservations.Domain.Repositories;
 using GearFlow.Shared.Abstractions.Queries;
 using GearFlow.Shared.Abstractions.Time;
 
-namespace GearFlow.Modules.Reservations.Application.Queries.GetReservationDraft;
+namespace GearFlow.Modules.Reservations.Application.Queries.GetCurrentReservationDraft;
 
-public sealed record GetReservationDraftHandler : IQueryHandler<GetReservationDraft, ReservationDraftDto?>
+public sealed record GetCurrentReservationDraftHandler : IQueryHandler<GetCurrentReservationDraft, ReservationDraftDto?>
 {
     private readonly IReservationRepository _reservationRepository;
     private readonly IReservationAuthorizationService _reservationAuthorizationService;
     private readonly IClock _clock;
 
-    public GetReservationDraftHandler(IReservationRepository reservationRepository, IReservationAuthorizationService reservationAuthorizationService, IClock clock)
+    public GetCurrentReservationDraftHandler(IReservationRepository reservationRepository, IReservationAuthorizationService reservationAuthorizationService, IClock clock)
     {
         _reservationRepository = reservationRepository;
         _reservationAuthorizationService = reservationAuthorizationService; 
         _clock = clock;
     }
-
-    public async Task<ReservationDraftDto?> HandleAsync(GetReservationDraft query, CancellationToken cancellationToken)
+    public async Task<ReservationDraftDto?> HandleAsync(GetCurrentReservationDraft query, CancellationToken cancellationToken)
     {
         var now = _clock.Current();
-        var draft = await _reservationRepository.GetAsync(query.DraftId, cancellationToken);
+        var customerId = _reservationAuthorizationService.ResolveCustomerId(query.TargetCustomerId);
+
+        var draft = await _reservationRepository.GetDraftByCustomerIdAsync(customerId, cancellationToken);
         if (draft == null)
-            throw new ReservationNotFoundException(query.DraftId);
+            return null;
 
         _reservationAuthorizationService.Authorize(draft);
 

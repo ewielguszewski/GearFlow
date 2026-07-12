@@ -1,8 +1,10 @@
 using GearFlow.Modules.Reservations.Application.Interfaces;
+using GearFlow.Modules.Reservations.Application.Queries;
 using GearFlow.Modules.Reservations.Domain.Repositories;
 using GearFlow.Modules.Reservations.Infrastructure.Authorization.Services;
 using GearFlow.Modules.Reservations.Infrastructure.Background;
 using GearFlow.Modules.Reservations.Infrastructure.DAL;
+using GearFlow.Modules.Reservations.Infrastructure.DAL.Readers;
 using GearFlow.Modules.Reservations.Infrastructure.DAL.Repositories;
 using GearFlow.Shared.Infrastructure.Postgres;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +20,7 @@ public static class Extensions
         services.AddScoped<IExpiredDraftReservationProcessor, ExpiredDraftReservationProcessor>();
         services.AddHostedService<ExpiredDraftReservationCleanupWorker>();
         services.AddScoped<IReservationAuthorizationService, ReservationAuthorizationService>();
+        services.AddScoped<IReservationReader, ReservationReader>();
 
         services.AddOptions<ReservationExpiryCleanupOptions>()
             .BindConfiguration(ReservationExpiryCleanupOptions.SectionName)

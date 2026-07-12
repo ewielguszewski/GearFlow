@@ -1,4 +1,5 @@
-﻿using GearFlow.Shared.Abstractions.Queries;
+﻿using GearFlow.Modules.Reservations.Application.Queries.DTO;
+using GearFlow.Shared.Abstractions.Queries;
 
 namespace GearFlow.Modules.Reservations.Application.Queries.GetReservationDraft;
 

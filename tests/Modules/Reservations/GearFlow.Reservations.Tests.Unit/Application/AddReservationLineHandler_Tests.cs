@@ -21,9 +21,9 @@ public class AddReservationLineHandler_Tests
             now: reservation.TtlExpiresAt.AddMinutes(1));
 
         var exception = await Record.ExceptionAsync(() => handler.HandleAsync(new AddReservationLineCommand(
-            reservation.Id,
             Guid.NewGuid(),
-            Guid.NewGuid())));
+            Guid.NewGuid(),
+            reservation.CustomerId)));
 
         exception.ShouldBeOfType<DomainException>();
         availability.ReleasedSourceId.ShouldBeNull();
@@ -58,9 +58,9 @@ public class AddReservationLineHandler_Tests
         var reservationLineId = Guid.NewGuid();
 
         await handler.HandleAsync(new AddReservationLineCommand(
-            reservation.Id,
             reservationLineId,
-            variantId));
+            variantId,
+            reservation.CustomerId));
 
         availability.AllocatedVariantId.ShouldBe(variantId);
         availability.AllocatedSourceId.ShouldBe(reservation.Id);
@@ -79,9 +79,9 @@ public class AddReservationLineHandler_Tests
         var handler = CreateHandler(reservation, availability: availability, authorization: authorization);
 
         var exception = await Record.ExceptionAsync(() => handler.HandleAsync(new AddReservationLineCommand(
-            reservation.Id,
             Guid.NewGuid(),
-            Guid.NewGuid())));
+            Guid.NewGuid(),
+            reservation.CustomerId)));
 
         exception.ShouldBeOfType<ForbiddenException>();
         availability.AllocatedSourceId.ShouldBeNull();

@@ -2,7 +2,7 @@
 
 namespace GearFlow.Modules.Reservations.Application.Queries.GetAvailableOffers;
 
-public sealed record AvailableOfferDto(
+public sealed record AvailableOfferResult(
     Guid VariantId,
     string Brand,
     string Model,

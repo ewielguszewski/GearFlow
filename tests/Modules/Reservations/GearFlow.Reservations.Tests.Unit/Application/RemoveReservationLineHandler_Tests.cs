@@ -17,7 +17,7 @@ public class RemoveReservationLineHandler_Tests
         var availability = new FakeAvailabilityAllocator();
         var handler = CreateHandler(reservation, availability);
 
-        await handler.HandleAsync(new RemoveReservationLineCommand(reservation.Id, lineId), CancellationToken.None);
+        await handler.HandleAsync(new RemoveReservationLineCommand(reservation.CustomerId, lineId), CancellationToken.None);
 
         reservation.ReservationLines.ShouldBeEmpty();
         availability.ReleasedSourceId.ShouldBe(reservation.Id);
@@ -31,7 +31,7 @@ public class RemoveReservationLineHandler_Tests
         var availability = new FakeAvailabilityAllocator();
         var handler = CreateHandler(reservation, availability);
 
-        await handler.HandleAsync(new RemoveReservationLineCommand(reservation.Id, Guid.NewGuid()), CancellationToken.None);
+        await handler.HandleAsync(new RemoveReservationLineCommand(reservation.CustomerId, Guid.NewGuid()), CancellationToken.None);
 
         availability.ReleasedSourceId.ShouldBeNull();
         availability.ReleasedItemId.ShouldBeNull();

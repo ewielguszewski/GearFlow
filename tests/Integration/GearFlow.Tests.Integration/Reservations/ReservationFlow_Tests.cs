@@ -30,9 +30,9 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
     {
         var customer = await SignUpCustomerAsync();
         var draftId = await CreateDraftAsync(customer.Client);
-        var offer = await GetFirstAvailableOfferAsync(customer.Client, draftId);
+        var offer = await GetFirstAvailableOfferAsync(customer.Client);
 
-        var lineId = await AddLineAsync(customer.Client, draftId, offer.VariantId);
+        var lineId = await AddLineAsync(customer.Client, offer.VariantId);
 
         var draftWithLine = await GetDraftAsync(customer.Client, draftId);
         Assert.Equal("Draft", draftWithLine.Status);
@@ -40,17 +40,17 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
         Assert.Equal(lineId, draftWithLine.ReservedItems.Single().ReservationLineId);
         Assert.Equal(1, await CountBookingsAsync(draftId));
 
-        var removeResponse = await customer.Client.DeleteAsync($"/api/reservations/drafts/{draftId}/lines/{lineId}");
-        Assert.Equal(HttpStatusCode.NoContent, removeResponse.StatusCode);
+        var removeResponse = await customer.Client.DeleteAsync($"/api/reservations/drafts/current/lines/{lineId}");
+        Assert.Equal(HttpStatusCode.OK, removeResponse.StatusCode);
 
         var draftAfterRemove = await GetDraftAsync(customer.Client, draftId);
         Assert.Empty(draftAfterRemove.ReservedItems);
         Assert.Equal(0, await CountBookingsAsync(draftId));
 
-        await AddLineAsync(customer.Client, draftId, offer.VariantId);
+        await AddLineAsync(customer.Client, offer.VariantId);
 
         var confirmResponse = await customer.Client.PostAsJsonAsync(
-            $"/api/reservations/drafts/{draftId}/confirm",
+            "/api/reservations/drafts/current/confirm",
             new { paymentMethod = "CashOnPickup" });
         Assert.Equal(HttpStatusCode.OK, confirmResponse.StatusCode);
 
@@ -184,10 +184,10 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
         return body.ReservationId;
     }
 
-    private static async Task<AvailableOfferResponse> GetFirstAvailableOfferAsync(HttpClient client, Guid draftId)
+    private static async Task<AvailableOfferResponse> GetFirstAvailableOfferAsync(HttpClient client)
     {
         var offers = await client.GetFromJsonAsync<IReadOnlyCollection<AvailableOfferResponse>>(
-            $"/api/reservations/drafts/{draftId}/offers");
+            "/api/reservations/drafts/current/offers");
 
         Assert.NotNull(offers);
         Assert.NotEmpty(offers);
@@ -195,17 +195,18 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
         return offers.First(x => x.AvailableCount > 0);
     }
 
-    private static async Task<Guid> AddLineAsync(HttpClient client, Guid draftId, Guid offerVariantId)
+    private static async Task<Guid> AddLineAsync(HttpClient client, Guid offerVariantId)
     {
         var response = await client.PostAsJsonAsync(
-            $"/api/reservations/drafts/{draftId}/lines",
+            "/api/reservations/drafts/current/lines",
             new { offerVariantId });
 
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<AddLineResponse>();
+        var body = await response.Content.ReadFromJsonAsync<ReservationDraftResponse>();
         Assert.NotNull(body);
-        return body.ReservationLineId;
+        Assert.NotEmpty(body.ReservedItems);
+        return body.ReservedItems.Last().ReservationLineId;
     }
 
     private static async Task<ReservationDraftResponse> GetDraftAsync(HttpClient client, Guid draftId)
@@ -262,8 +263,6 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
     }
 
     private sealed record CreateDraftResponse(Guid ReservationId);
-
-    private sealed record AddLineResponse(Guid ReservationLineId);
 
     private sealed record AuthResponse(string AccessToken, string RefreshToken);
 
