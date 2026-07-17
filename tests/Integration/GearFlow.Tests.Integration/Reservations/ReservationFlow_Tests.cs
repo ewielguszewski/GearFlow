@@ -15,6 +15,7 @@ using System.Net.Http.Json;
 
 namespace GearFlow.Tests.Integration.Reservations;
 
+[Collection(GearFlowIntegrationCollection.Name)]
 public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
 {
     private readonly GearFlowIntegrationFixture _fixture;

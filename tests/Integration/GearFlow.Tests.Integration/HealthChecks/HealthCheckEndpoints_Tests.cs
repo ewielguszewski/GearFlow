@@ -3,6 +3,7 @@ using System.Net;
 
 namespace GearFlow.Tests.Integration.HealthChecks;
 
+[Collection(GearFlowIntegrationCollection.Name)]
 public class HealthCheckEndpoints_Tests : IClassFixture<GearFlowIntegrationFixture>
 {
     private readonly GearFlowIntegrationFixture _fixture;
