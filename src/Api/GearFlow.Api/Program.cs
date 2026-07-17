@@ -23,21 +23,7 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.Services.AddSerilog((services, configuration) =>
-    {
-        configuration
-            .ReadFrom.Configuration(builder.Configuration)
-            .ReadFrom.Services(services)
-            .Enrich.FromLogContext()
-            .Enrich.WithProperty("Application", "GearFlow.Api")
-            .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
-            .WriteTo.Console(new RenderedCompactJsonFormatter());
-
-        var seqServerUrl = builder.Configuration["Seq:ServerUrl"];
-
-        if (!string.IsNullOrWhiteSpace(seqServerUrl))
-            configuration.WriteTo.Seq(seqServerUrl);
-    });
+    builder.ConfigureSerilog();
 
     builder.Services.AddInfrastructure([
         typeof(CreateDraftReservationCommand).Assembly,
@@ -62,7 +48,7 @@ try
 
     var app = builder.Build();
 
-    app.UseSerilogRequestLogging();
+    app.UseSerilog();
     app.UseInfrastructure();
 
     if (app.Environment.IsDevelopment())

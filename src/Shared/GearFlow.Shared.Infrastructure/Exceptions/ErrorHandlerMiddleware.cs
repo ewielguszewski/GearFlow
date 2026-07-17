@@ -1,6 +1,7 @@
 ﻿using GearFlow.Shared.Abstractions.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace GearFlow.Shared.Infrastructure.Exceptions;
 
@@ -50,7 +51,9 @@ internal class ErrorHandlerMiddleware : IMiddleware
             message = statusCode >= 500 ? "Unexpected error occurred" : exception.Message,
             statusCode,
             errorCode = exception.GetType().Name,
-            traceId = context.TraceIdentifier
+            traceId = Activity.Current is { IdFormat: ActivityIdFormat.W3C } activity
+                ? activity.TraceId.ToString()
+                : context.TraceIdentifier
         };
 
         await context.Response.WriteAsJsonAsync(response);
