@@ -3,7 +3,6 @@ using GearFlow.Modules.Catalog.Contracts;
 using GearFlow.Modules.Reservations.Application.Interfaces;
 using GearFlow.Modules.Reservations.Domain.Entities;
 using GearFlow.Modules.Reservations.Domain.Repositories;
-using GearFlow.Modules.Reservations.Domain.ValueObjects;
 using GearFlow.Shared.Abstractions.Time;
 using GearFlow.Shared.Abstractions.ValueObjects;
 
@@ -21,8 +20,8 @@ internal static class ReservationApplicationTestData
             CurrencyCode.PLN,
             Now);
 
-    public static OfferSnapshot CreateOfferSnapshot(Guid? itemId = null, Guid? variantId = null)
-        => OfferSnapshot.Create(
+    public static ItemSnapshot CreateOfferSnapshot(Guid? itemId = null, Guid? variantId = null)
+        => ItemSnapshot.Create(
             itemId ?? Guid.NewGuid(),
             variantId ?? Guid.NewGuid(),
             "Variant",

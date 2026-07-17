@@ -1,4 +1,3 @@
-using GearFlow.Modules.Reservations.Domain.ValueObjects;
 using GearFlow.Shared.Abstractions.Common;
 using GearFlow.Shared.Abstractions.Kernel.Types;
 using GearFlow.Shared.Abstractions.ValueObjects;
@@ -79,7 +78,7 @@ public class Reservation : AggregateRoot
         ExtendTtlIfNotExceeded();
     }
 
-    public void AddReservationLine(Guid reservationLineId, OfferSnapshot item, DateTime utcNow)
+    public void AddReservationLine(Guid reservationLineId, ItemSnapshot item, DateTime utcNow)
     {
         if (item.UnitPrice.Currency != Currency)
             throw new DomainException($"Currency of the reservation line ({item.UnitPrice.Currency}) must match reservation currency ({Currency})");

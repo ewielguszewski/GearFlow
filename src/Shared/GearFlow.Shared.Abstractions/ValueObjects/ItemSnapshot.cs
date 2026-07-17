@@ -1,10 +1,8 @@
-﻿using GearFlow.Shared.Abstractions.ValueObjects;
-
-namespace GearFlow.Modules.Reservations.Domain.ValueObjects;
+﻿namespace GearFlow.Shared.Abstractions.ValueObjects;
 
 // Snapshot used for historical display and navigation.
 // VariantId point to the public catalog path; ItemId points to the concrete item held internally.
-public readonly record struct OfferSnapshot
+public readonly record struct ItemSnapshot
 {
     public Guid ItemId { get; init; }
     public Guid VariantId { get; init; }
@@ -16,7 +14,7 @@ public readonly record struct OfferSnapshot
     public PriceSource PriceSource { get; init; }
     public string? Size { get; init; }
 
-    public static OfferSnapshot Create(
+    public static ItemSnapshot Create(
         Guid itemId,
         Guid variantId,
         string? variantName,
