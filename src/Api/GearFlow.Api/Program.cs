@@ -8,49 +8,85 @@ using GearFlow.Modules.Rentals.Application.Commands.StartRentalFromReservation;
 using GearFlow.Modules.Rentals.Infrastructure;
 using GearFlow.Shared.Infrastructure;
 using GearFlow.Shared.Abstractions.Security;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Serilog;
+using Serilog.Formatting.Compact;
 using System.Text.Json.Serialization;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .WriteTo.Console(new RenderedCompactJsonFormatter())
+    .CreateBootstrapLogger();
 
-builder.Services.AddInfrastructure([
-    typeof(CreateDraftReservationCommand).Assembly,
-    typeof(StartRentalFromReservationCommand).Assembly
-]);
-builder.Services.AddUsersCore(builder.Configuration);
-builder.Services.AddCatalogModule();
-builder.Services.AddAvailabilityModule();
-builder.Services.AddReservationsModule();
-builder.Services.AddRentalsModule();
-
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
-    });
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwagger();
-
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<IUserContext, UserContext>();
-
-var app = builder.Build();
-
-app.UseInfrastructure();
-
-if (app.Environment.IsDevelopment())
+try
 {
-   await app.InitializeDevelopmentDatabaseAsync();
+    Log.Information("Starting GearFlow API");
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.ConfigureSerilog();
+
+    builder.Services.AddInfrastructure([
+        typeof(CreateDraftReservationCommand).Assembly,
+        typeof(StartRentalFromReservationCommand).Assembly
+    ]);
+    builder.Services.AddUsersCore(builder.Configuration);
+    builder.Services.AddCatalogModule();
+    builder.Services.AddAvailabilityModule();
+    builder.Services.AddReservationsModule();
+    builder.Services.AddRentalsModule();
+
+    builder.Services.AddControllers()
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
+        });
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwagger();
+
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<IUserContext, UserContext>();
+
+    var app = builder.Build();
+
+    app.UseSerilog();
+
+    app.UseInfrastructure();
+
+    if (app.Environment.IsDevelopment())
+    {
+        await app.InitializeDevelopmentDatabaseAsync();
+
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapHealthChecks("/health/live", new HealthCheckOptions
+    {
+        Predicate = _ => false
+    }).AllowAnonymous();
+
+    app.MapHealthChecks("/health/ready", new HealthCheckOptions
+    {
+        Predicate = registration => registration.Tags.Contains("ready")
+    }).AllowAnonymous();
+
+    app.MapControllers();
+
+    await app.RunAsync();
 }
-
-app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+catch (Exception exception)
+{
+    Log.Fatal(exception, "GearFlow API terminated unexpectedly");
+    throw;
+}
+finally
+{
+    await Log.CloseAndFlushAsync();
+}
 
 public partial class Program;

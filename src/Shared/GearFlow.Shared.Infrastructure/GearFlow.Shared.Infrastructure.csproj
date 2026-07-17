@@ -18,4 +18,8 @@
 	<FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="GearFlow.Shared.Infrastructure.Tests.Unit" />
+  </ItemGroup>
+
 </Project>

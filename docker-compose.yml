@@ -28,6 +28,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - postgres__connectionString=Host=postgres;Database=gearflow_db;Username=postgres;Password=postgres
+      - Seq__ServerUrl=http://seq
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,8 +38,22 @@ services:
     networks:
       - gearflow_network
 
+  seq:
+    image: datalust/seq:2025.2
+    environment:
+      ACCEPT_EULA: Y
+      SEQ_FIRSTRUN_NOAUTHENTICATION: "True"
+    ports:
+      - "127.0.0.1:5341:80"
+    volumes:
+      - seq_data:/data
+    restart: unless-stopped
+    networks:
+      - gearflow_network
+
 volumes:
   postgres_data:
+  seq_data:
 
 networks:
   gearflow_network:
