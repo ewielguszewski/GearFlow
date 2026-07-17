@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -8,8 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Shared\GearFlow.Shared.Infrastructure\GearFlow.Shared.Infrastructure.csproj" />
-    <ProjectReference Include="..\GearFlow.Modules.Reservations.Application\GearFlow.Modules.Reservations.Application.csproj" />
-    <ProjectReference Include="..\GearFlow.Modules.Reservations.Contracts\GearFlow.Modules.Reservations.Contracts.csproj" />
+    <ProjectReference Include="..\GearFlow.Modules.Rentals.Application\GearFlow.Modules.Rentals.Application.csproj" />
   </ItemGroup>
 
 </Project>

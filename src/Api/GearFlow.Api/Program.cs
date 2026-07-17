@@ -4,6 +4,8 @@ using GearFlow.Modules.Catalog.Infrastructure;
 using GearFlow.Modules.Users.Core;
 using GearFlow.Modules.Reservations.Application.Commands.CreateDraftReservation;
 using GearFlow.Modules.Reservations.Infrastructure;
+using GearFlow.Modules.Rentals.Application.Commands.StartRentalFromReservation;
+using GearFlow.Modules.Rentals.Infrastructure;
 using GearFlow.Shared.Infrastructure;
 using GearFlow.Shared.Abstractions.Security;
 using System.Text.Json.Serialization;
@@ -11,12 +13,14 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure([
-    typeof(CreateDraftReservationCommand).Assembly
+    typeof(CreateDraftReservationCommand).Assembly,
+    typeof(StartRentalFromReservationCommand).Assembly
 ]);
 builder.Services.AddUsersCore(builder.Configuration);
 builder.Services.AddCatalogModule();
 builder.Services.AddAvailabilityModule();
 builder.Services.AddReservationsModule();
+builder.Services.AddRentalsModule();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
