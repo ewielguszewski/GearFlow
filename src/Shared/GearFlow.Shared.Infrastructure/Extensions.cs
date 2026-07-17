@@ -1,12 +1,14 @@
 using GearFlow.Shared.Abstractions.Time;
 using GearFlow.Shared.Infrastructure.Commands;
 using GearFlow.Shared.Infrastructure.Exceptions;
+using GearFlow.Shared.Infrastructure.HealthChecks;
 using GearFlow.Shared.Infrastructure.Logging;
 using GearFlow.Shared.Infrastructure.Postgres;
 using GearFlow.Shared.Infrastructure.Queries;
 using GearFlow.Shared.Infrastructure.Time;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Reflection;
 
 namespace GearFlow.Shared.Infrastructure;
@@ -19,9 +21,15 @@ public static class Extensions
         services.AddSingleton<IClock, UtcClock>();
         services.AddCommands(assemblies);
         services.AddQueries(assemblies);
-        services.AddLoggingDecorators();
         services.AddPostgresOptions();
         services.AddPostgresConnection();
+        services.AddHealthChecks()
+            .AddCheck<PostgresHealthCheck>(
+                "PostgreSQL",
+                failureStatus: HealthStatus.Unhealthy,
+                tags:  ["ready"],
+                timeout: TimeSpan.FromSeconds(5)
+            );
         services.AddScoped<IUnitOfWork, EfPostgresUnitOfWork>();
         services.AddUoWHandlersDecorators();
         services.AddLoggingDecorators();

@@ -8,6 +8,7 @@ using GearFlow.Modules.Rentals.Application.Commands.StartRentalFromReservation;
 using GearFlow.Modules.Rentals.Infrastructure;
 using GearFlow.Shared.Infrastructure;
 using GearFlow.Shared.Abstractions.Security;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using Serilog.Formatting.Compact;
 using System.Text.Json.Serialization;
@@ -49,6 +50,7 @@ try
     var app = builder.Build();
 
     app.UseSerilog();
+
     app.UseInfrastructure();
 
     if (app.Environment.IsDevelopment())
@@ -62,6 +64,16 @@ try
     app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
+
+    app.MapHealthChecks("/health/live", new HealthCheckOptions
+    {
+        Predicate = _ => false
+    }).AllowAnonymous();
+
+    app.MapHealthChecks("/health/ready", new HealthCheckOptions
+    {
+        Predicate = registration => registration.Tags.Contains("ready")
+    }).AllowAnonymous();
 
     app.MapControllers();
 
