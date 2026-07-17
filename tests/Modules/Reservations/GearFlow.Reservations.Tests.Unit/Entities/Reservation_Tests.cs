@@ -1,5 +1,4 @@
 using GearFlow.Modules.Reservations.Domain.Entities;
-using GearFlow.Modules.Reservations.Domain.ValueObjects;
 using GearFlow.Shared.Abstractions.Common;
 using GearFlow.Shared.Abstractions.Time;
 using GearFlow.Shared.Abstractions.ValueObjects;
@@ -13,7 +12,7 @@ public class Reservation_Tests
     private readonly CurrencyCode _currency;
     private readonly Money _price;
     private readonly DateRange _reservedPeriod;
-    private readonly OfferSnapshot _offerSnapshot;
+    private readonly ItemSnapshot _offerSnapshot;
 
     public Reservation_Tests()
     {
@@ -21,7 +20,7 @@ public class Reservation_Tests
         _currency = CurrencyCode.PLN;
         _price = Money.CreateFromPln(1);
         _reservedPeriod = new DateRange(_clock.Current().Date, _clock.Current().Date);
-        _offerSnapshot = OfferSnapshot.Create(Guid.NewGuid(), Guid.NewGuid(), "Name", "Brand", "Model", "Note", _price, PriceSource.CatalogModel, "S");
+        _offerSnapshot = ItemSnapshot.Create(Guid.NewGuid(), Guid.NewGuid(), "Name", "Brand", "Model", "Note", _price, PriceSource.CatalogModel, "S");
     }
 
     [Fact]

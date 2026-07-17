@@ -13,8 +13,13 @@ COPY src/Modules/Catalog/GearFlow.Modules.Catalog.Contracts/GearFlow.Modules.Cat
 COPY src/Modules/Catalog/GearFlow.Modules.Catalog.Domain/GearFlow.Modules.Catalog.Domain.csproj src/Modules/Catalog/GearFlow.Modules.Catalog.Domain/
 COPY src/Modules/Catalog/GearFlow.Modules.Catalog.Infrastructure/GearFlow.Modules.Catalog.Infrastructure.csproj src/Modules/Catalog/GearFlow.Modules.Catalog.Infrastructure/
 COPY src/Modules/Reservations/GearFlow.Modules.Reservations.Application/GearFlow.Modules.Reservations.Application.csproj src/Modules/Reservations/GearFlow.Modules.Reservations.Application/
+COPY src/Modules/Reservations/GearFlow.Modules.Reservations.Contracts/GearFlow.Modules.Reservations.Contracts.csproj src/Modules/Reservations/GearFlow.Modules.Reservations.Contracts/
 COPY src/Modules/Reservations/GearFlow.Modules.Reservations.Domain/GearFlow.Modules.Reservations.Domain.csproj src/Modules/Reservations/GearFlow.Modules.Reservations.Domain/
 COPY src/Modules/Reservations/GearFlow.Modules.Reservations.Infrastructure/GearFlow.Modules.Reservations.Infrastructure.csproj src/Modules/Reservations/GearFlow.Modules.Reservations.Infrastructure/
+COPY src/Modules/Rentals/GearFlow.Modules.Rentals.Application/GearFlow.Modules.Rentals.Application.csproj src/Modules/Rentals/GearFlow.Modules.Rentals.Application/
+COPY src/Modules/Rentals/GearFlow.Modules.Rentals.Domain/GearFlow.Modules.Rentals.Domain.csproj src/Modules/Rentals/GearFlow.Modules.Rentals.Domain/
+COPY src/Modules/Rentals/GearFlow.Modules.Rentals.Infrastructure/GearFlow.Modules.Rentals.Infrastructure.csproj src/Modules/Rentals/GearFlow.Modules.Rentals.Infrastructure/
+COPY src/Modules/Users/GearFlow.Modules.Users.Core/GearFlow.Modules.Users.Core.csproj src/Modules/Users/GearFlow.Modules.Users.Core/
 
 RUN dotnet restore src/Api/GearFlow.Api/GearFlow.Api.csproj
 

@@ -5,7 +5,7 @@ using GearFlow.Shared.Abstractions.Time;
 using GearFlow.Modules.Availability.Contracts;
 using GearFlow.Modules.Catalog.Contracts;
 using GearFlow.Shared.Abstractions.Common;
-using GearFlow.Modules.Reservations.Domain.ValueObjects;
+using GearFlow.Shared.Abstractions.ValueObjects;
 using GearFlow.Modules.Reservations.Application.Interfaces;
 
 namespace GearFlow.Modules.Reservations.Application.Commands.AddReservationLine;
@@ -55,7 +55,7 @@ public class AddReservationLineHandler : ICommandHandler<AddReservationLineComma
         if (heldItemId is null)
             throw new NoAvailableItemForOfferException(command.OfferVariantId);
 
-        var snapshot = new OfferSnapshot
+        var snapshot = new ItemSnapshot
         {
             ItemId = heldItemId.Value,
             VariantId = offer.VariantId,

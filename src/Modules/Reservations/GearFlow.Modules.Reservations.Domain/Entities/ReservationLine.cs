@@ -1,5 +1,4 @@
-﻿using GearFlow.Modules.Reservations.Domain.ValueObjects;
-using GearFlow.Shared.Abstractions.ValueObjects;
+﻿using GearFlow.Shared.Abstractions.ValueObjects;
 
 namespace GearFlow.Modules.Reservations.Domain.Entities;
 
@@ -12,14 +11,14 @@ public class ReservationLine
     public Reservation Reservation { get; private set; } = default!;
 
     // Stores the selected offer variant, and held item without referencing live Catalog entities.
-    public OfferSnapshot Item { get; private set; } = default!;
+    public ItemSnapshot Item { get; private set; } = default!;
     
 
     public Money LineTotalPrice { get; private set; } = default!;
 
     private ReservationLine() { } // EF
 
-    private ReservationLine(Guid id, Guid reservationId, OfferSnapshot item, Money lineTotalPrice)
+    private ReservationLine(Guid id, Guid reservationId, ItemSnapshot item, Money lineTotalPrice)
     {
         Id = id;
         ReservationId = reservationId;
@@ -27,6 +26,6 @@ public class ReservationLine
         LineTotalPrice = lineTotalPrice; // need to think about duration - pass from reservation or store duplicate?
     }
 
-    public static ReservationLine Create(Guid id, Guid reservationId, OfferSnapshot item, Money lineTotalPrice)
+    public static ReservationLine Create(Guid id, Guid reservationId, ItemSnapshot item, Money lineTotalPrice)
             => new(id, reservationId, item, lineTotalPrice);
 }

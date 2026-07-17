@@ -1,7 +1,6 @@
 using GearFlow.Modules.Availability.Core.Entities;
 using GearFlow.Modules.Availability.Infrastructure.DAL;
 using GearFlow.Modules.Reservations.Domain.Entities;
-using GearFlow.Modules.Reservations.Domain.ValueObjects;
 using GearFlow.Modules.Reservations.Infrastructure.Background;
 using GearFlow.Modules.Reservations.Infrastructure.DAL;
 using GearFlow.Modules.Users.Core.Auth.DTO;
@@ -240,7 +239,7 @@ public class ReservationFlow_Tests : IClassFixture<GearFlowIntegrationFixture>
 
         reservation.AddReservationLine(
             Guid.NewGuid(),
-            OfferSnapshot.Create(
+            ItemSnapshot.Create(
                 itemId,
                 variantId,
                 "Default",

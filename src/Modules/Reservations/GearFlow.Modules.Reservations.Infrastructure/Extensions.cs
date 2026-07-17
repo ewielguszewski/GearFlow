@@ -8,6 +8,7 @@ using GearFlow.Modules.Reservations.Infrastructure.DAL.Readers;
 using GearFlow.Modules.Reservations.Infrastructure.DAL.Repositories;
 using GearFlow.Shared.Infrastructure.Postgres;
 using Microsoft.Extensions.DependencyInjection;
+using GearFlow.Modules.Reservations.Contracts.Readers;
 
 namespace GearFlow.Modules.Reservations.Infrastructure;
 
@@ -21,6 +22,8 @@ public static class Extensions
         services.AddHostedService<ExpiredDraftReservationCleanupWorker>();
         services.AddScoped<IReservationAuthorizationService, ReservationAuthorizationService>();
         services.AddScoped<IReservationReader, ReservationReader>();
+        services.AddScoped<IReservationRentalReader, ReservationRentalReader>();
+        services.AddScoped<IReservationRentalFulfillment, ReservationRentalReader>();
 
         services.AddOptions<ReservationExpiryCleanupOptions>()
             .BindConfiguration(ReservationExpiryCleanupOptions.SectionName)
