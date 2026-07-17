@@ -1,9 +1,9 @@
 # GearFlow
 
 GearFlow is a modular monolith backend API for equipment rental workflows.
-The project models catalog browsing, item availability, reservation drafts, reservation confirmation, user authentication and role-based reservation access.
+The project models catalog browsing, item availability, reservation drafts, reservation confirmation, rental pickup/return, user authentication and role-based access.
 
-The current implementation focuses on the reservation draft lifecycle and the foundations for future rental, payment, pricing and return inspection flows.
+The current implementation covers the first clickable catalog-to-return lifecycle. Payment, richer pricing, maintenance, notifications and production hardening remain future slices.
 
 ## Table of contents
 
@@ -42,12 +42,11 @@ The current implementation focuses on the reservation draft lifecycle and the fo
 - Docker Compose local environment
 - GitHub Actions CI
 - Unit and integration tests
+- Rental pickup and return HTTP flow for employee/admin accounts
 
 ### In progress / planned
 
-- Rentals module
-- Checkout flow from confirmed reservation
-- Return inspection flow
+- Rental integration tests and operational hardening
 - Pricing breakdown
 - Payment/deposit flow
 - Damaged item handling on return
@@ -92,6 +91,12 @@ src/
       GearFlow.Modules.Reservations.Domain
       GearFlow.Modules.Reservations.Application
       GearFlow.Modules.Reservations.Infrastructure
+      GearFlow.Modules.Reservations.Contracts
+
+    Rentals/
+      GearFlow.Modules.Rentals.Domain
+      GearFlow.Modules.Rentals.Application
+      GearFlow.Modules.Rentals.Infrastructure
 
     Users/
       GearFlow.Modules.Users.Core
@@ -126,7 +131,7 @@ Main concepts:
 
 Catalog is responsible for the current rentable state of physical items and public offer data.
 
-A variant can use either the model base price or its own overridden price. Reservation lines store offer snapshots so already-created reservations are not affected by later catalog price changes.
+A variant can use either the model base price or its own overridden price. Reservation and rental lines store item snapshots so already-created business records are not affected by later catalog price changes.
 
 ### Availability
 
@@ -143,7 +148,7 @@ The booking model already supports sources such as:
 - `Maintenance`
 - `ManualBlock`
 
-The current implemented flow creates reservation bookings. Rental, maintenance and manual block workflows are planned for later slices.
+The current implemented flow creates reservation bookings for held items. The rental workflow consumes confirmed reservations; separate rental, maintenance and manual block availability writes remain future slices.
 
 Availability is responsible for checking whether a physical item is already blocked in a given period. Reservation creation and modification use Availability to allocate or release item holds.
 
@@ -155,7 +160,7 @@ Main concepts:
 
 - `Reservation`
 - `ReservationLine`
-- `OfferSnapshot`
+- `ItemSnapshot`
 - `ReservationStatus`
 - `CancellationReason`
 - `PaymentMethod`
@@ -209,7 +214,7 @@ Typical customer flow:
 3. Search available offers for the draft period
 4. Add offer to current draft
 5. Availability allocates a specific item
-6. Reservation line stores an offer snapshot
+6. Reservation line stores an item snapshot
 7. Remove line or confirm draft
 8. Expired drafts are cancelled by background cleanup
 ```
@@ -232,6 +237,11 @@ POST   /api/reservations/drafts/current/confirm
 
 GET    /api/reservations/upcoming
 GET    /api/admin/reservations
+
+GET    /api/admin/rentals
+GET    /api/admin/rentals/{rentalId}
+POST   /api/admin/rentals/from-reservation/{reservationId}
+POST   /api/admin/rentals/{rentalId}/return
 ```
 
 ## Business rules currently implemented
@@ -244,7 +254,7 @@ GET    /api/admin/reservations
 - A customer can have only one active draft.
 - Creating a new draft cancels the previous active draft.
 - Reservation line currency must match reservation currency.
-- Offer price is snapshotted into reservation line.
+- Item and price facts are snapshotted into reservation and rental lines.
 - Availability prevents overlapping bookings for the same item.
 - Expired drafts release their reserved item allocations.
 - Customers can access only their own reservation data.
@@ -259,7 +269,7 @@ Adding a reservation line uses three modules:
 Reservations
   -> asks Catalog for a reservable offer
   -> asks Availability to allocate a physical item
-  -> stores selected item and offer snapshot in ReservationLine
+  -> stores selected item and price snapshot in ReservationLine
 ```
 
 Expired draft cleanup also crosses module boundaries:
@@ -272,6 +282,15 @@ Reservations
 ```
 
 Cross-module commands are executed inside a shared PostgreSQL transaction.
+
+Starting a rental also crosses module boundaries:
+
+```text
+Rentals
+  -> asks Reservations.Contracts for a confirmed reservation snapshot
+  -> creates an active rental with line pickup state
+  -> marks the source reservation as Fulfilled
+```
 
 ## Local development
 
@@ -336,11 +355,11 @@ Workflow file:
 
 ## Roadmap
 
-The next milestone is turning a confirmed reservation into an active rental.
+The first confirmed-reservation-to-rental flow is implemented. The next milestone is hardening it with integration tests, richer condition handling, availability updates after return and a complete pricing breakdown.
 
 ### Rentals module
 
-Target flow:
+Current basic flow:
 
 ```text
 Confirmed reservation
